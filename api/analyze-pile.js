@@ -109,7 +109,9 @@ export default async function handler(req, res) {
       });
     }
 
-    return res.status(200).json(webhookPayload);
+    // Parse the N8N response format and convert to expected format
+    const parsedResponse = parseN8NResponse(webhookPayload);
+    return res.status(200).json(parsedResponse);
   } catch (error) {
     console.error('Error calling n8n webhook:', error);
     
@@ -144,5 +146,97 @@ export default async function handler(req, res) {
       suggestions: suggestions,
       analysisTimestamp: new Date().toISOString(),
     });
+  }
+}
+
+function parseN8NResponse(n8nResponse) {
+  const timestamp = new Date().toISOString();
+  
+  try {
+    // Handle array response format from N8N
+    const responseData = Array.isArray(n8nResponse) ? n8nResponse[0] : n8nResponse;
+    const content = responseData.content || responseData.message || '';
+    
+    // Parse the content to extract compliance information
+    const isApproved = content.includes('✅ **APPROVED**') || content.includes('**APPROVED**');
+    const hasViolations = content.includes('**Violations or Issues Found:**') && 
+                          !content.includes('**None observed**') && 
+                          !content.includes('**No actions needed**');
+    
+    // Extract issues from the content
+    const issues = [];
+    const suggestions = [];
+    
+    if (hasViolations) {
+      // Look for violation patterns in the content
+      const violationMatch = content.match(/\*\*Violations or Issues Found:\*\*\n([\s\S]*?)(?:\n---|\n\*\*|$)/);
+      if (violationMatch) {
+        const violationText = violationMatch[1];
+        const violationLines = violationText.split('\n').filter(line => 
+          line.trim() && 
+          !line.includes('None observed') && 
+          !line.includes('No actions needed')
+        );
+        issues.push(...violationLines.map(line => line.replace(/^[-•]\s*/, '').trim()).filter(Boolean));
+      }
+    }
+    
+    // Extract suggestions from actionable instructions
+    const instructionMatch = content.match(/\*\*Actionable Instructions[^:]*:\*\*\n([\s\S]*?)(?:\n---|\n\*\*|$)/);
+    if (instructionMatch) {
+      const instructionText = instructionMatch[1];
+      const instructionLines = instructionText.split('\n').filter(line => 
+        line.trim() && 
+        !line.includes('No actions needed') &&
+        !line.includes('No corrections were needed')
+      );
+      suggestions.push(...instructionLines.map(line => line.replace(/^[-•]\s*/, '').trim()).filter(Boolean));
+    }
+    
+    // If no specific suggestions found, add general ones based on compliance
+    if (suggestions.length === 0) {
+      if (isApproved) {
+        suggestions.push('✅ Your pile meets all collection guidelines!');
+        suggestions.push('✅ No changes needed - ready for collection');
+      } else {
+        suggestions.push('Please review the guidelines and make necessary adjustments');
+        suggestions.push('Ensure leaves are loose and not bagged');
+        suggestions.push('Keep pile at least 3 feet from the street');
+      }
+    }
+    
+    // Calculate confidence based on content analysis
+    let confidence = 75; // Default confidence
+    if (content.includes('clearly') || content.includes('appears to be')) {
+      confidence = 85;
+    }
+    if (content.includes('fully comply') || content.includes('full compliance')) {
+      confidence = 95;
+    }
+    if (content.includes('appears to') || content.includes('may be')) {
+      confidence = 70;
+    }
+    
+    return {
+      compliant: isApproved,
+      confidence: confidence,
+      issues: issues,
+      suggestions: suggestions,
+      analysisTimestamp: timestamp,
+      rawContent: content,
+      analysisMethod: 'n8n-openai-analysis'
+    };
+    
+  } catch (error) {
+    console.error('Error parsing N8N response:', error);
+    return {
+      compliant: false,
+      confidence: 0,
+      issues: ['Failed to parse analysis results'],
+      suggestions: ['Please try again with a clearer photo'],
+      analysisTimestamp: timestamp,
+      rawContent: JSON.stringify(n8nResponse),
+      analysisMethod: 'n8n-openai-analysis-error'
+    };
   }
 }
