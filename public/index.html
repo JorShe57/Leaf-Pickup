@@ -8,6 +8,101 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js"></script>
+  <script src="https://unpkg.com/gsap@3.12.2/dist/gsap.min.js"></script>
+  <style>
+    :root {
+      /* Primary Colors */
+      --primary-green: #1a6b2e;
+      --primary-green-dark: #145523;
+      --primary-green-hover: #226b38;
+      
+      /* Accent Colors */
+      --accent-blue-overlay: rgba(25, 55, 95, 0.65);
+      --accent-gold: #d4af37;
+      
+      /* Neutral Colors */
+      --white: #ffffff;
+      --off-white: #f8f9fa;
+      --light-gray: #e8e9eb;
+      --medium-gray: #6c757d;
+      --dark-gray: #343a40;
+      --black: #000000;
+      
+      /* Text Colors */
+      --text-primary: #212529;
+      --text-secondary: #6c757d;
+      --text-on-green: #ffffff;
+      --text-on-dark: #ffffff;
+      
+      /* Background Colors */
+      --bg-primary: #ffffff;
+      --bg-navigation: #1a6b2e;
+      --bg-hero-overlay: linear-gradient(to bottom, rgba(25, 55, 95, 0.3), rgba(25, 55, 95, 0.7));
+      --bg-button-green: #1a6b2e;
+      --bg-button-hover: #226b38;
+      
+      /* Border Colors */
+      --border-light: #dee2e6;
+      --border-medium: #ced4da;
+      
+      /* Button/Interactive Elements */
+      --button-primary-bg: #1a6b2e;
+      --button-primary-hover: #226b38;
+      --button-primary-text: #ffffff;
+      --button-outline-border: #1a6b2e;
+      
+      /* Icon Colors */
+      --icon-green: #1a6b2e;
+      --icon-alert: #ffc107;
+    }
+
+    /* Custom loading spinner */
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--light-gray);
+      border-top: 4px solid var(--primary-green);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Skeleton loading animation */
+    .skeleton {
+      background: linear-gradient(90deg, var(--light-gray) 25%, var(--off-white) 50%, var(--light-gray) 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Status indicator animations */
+    .status-pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    /* Card hover effects */
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(26, 107, 46, 0.15);
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
@@ -16,9 +111,15 @@
     const html = htm.bind(React.createElement);
 
     const statusStyles = {
-      'Not Started': 'bg-slate-200 text-slate-900',
-      'In Progress': 'bg-amber-100 text-amber-900',
-      Completed: 'bg-emerald-100 text-emerald-900',
+      'Not Started': 'bg-gray-100 text-gray-700 border-gray-300',
+      'In Progress': 'bg-yellow-100 text-yellow-800 border-yellow-300 status-pulse',
+      Completed: 'bg-green-100 text-green-800 border-green-300',
+    };
+
+    const statusIcons = {
+      'Not Started': '⏳',
+      'In Progress': '🔄',
+      Completed: '✅',
     };
 
     function normalizeStatus(value) {
@@ -46,13 +147,37 @@
     function StatusBadge({ status = 'Unknown' }) {
       const label = normalizeStatus(status);
       const baseClasses =
-        'inline-flex items-center rounded-full px-3 py-1 text-sm font-medium';
-      const variant = statusStyles[label] ?? 'bg-slate-100 text-slate-700';
+        'inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border';
+      const variant = statusStyles[label] ?? 'bg-gray-100 text-gray-700 border-gray-300';
+      const icon = statusIcons[label] ?? '❓';
 
       return html`<span className="${baseClasses} ${variant}">
-        <span className="mr-2 inline-flex h-2 w-2 rounded-full bg-current"></span>
+        <span className="mr-2 text-base">${icon}</span>
         ${label}
       </span>`;
+    }
+
+    function LoadingSpinner() {
+      return html`<div className="flex flex-col items-center justify-center py-8">
+        <div className="loading-spinner mb-4"></div>
+        <p className="text-sm text-gray-600">Loading collection routes...</p>
+      </div>`;
+    }
+
+    function SkeletonCard() {
+      return html`<div className="animate-pulse">
+        <div className="skeleton h-4 w-3/4 mb-2 rounded"></div>
+        <div className="skeleton h-3 w-1/2 mb-3 rounded"></div>
+        <div className="skeleton h-6 w-20 rounded-full"></div>
+      </div>`;
+    }
+
+    function SkeletonList() {
+      return html`<div className="space-y-3">
+        ${Array.from({ length: 5 }, (_, i) => html`<div key=${i} className="p-4 border rounded-lg">
+          <${SkeletonCard} />
+        </div>`)}
+      </div>`;
     }
 
     function formatDate(value) {
@@ -146,37 +271,44 @@
       let mainContent;
 
       if (loading) {
-        mainContent = html`<div
-          role="status"
-          aria-live="polite"
-          className="mt-8 rounded-lg bg-slate-50 p-6 text-center text-slate-600"
-        >
-          Loading the latest collection routes...
+        mainContent = html`<div className="mt-8">
+          <${LoadingSpinner} />
         </div>`;
       } else if (error) {
-        mainContent = html`<div className="mt-8 rounded-lg bg-rose-50 p-6 text-sm text-rose-700">
-          ${error}
+        mainContent = html`<div className="mt-8 rounded-lg bg-red-50 border border-red-200 p-6">
+          <div className="flex items-center">
+            <div className="text-red-500 text-xl mr-3">⚠️</div>
+            <div>
+              <h3 className="text-sm font-medium text-red-800">Unable to load data</h3>
+              <p className="text-sm text-red-700 mt-1">${error}</p>
+            </div>
+          </div>
         </div>`;
       } else {
         const resultsList =
           filteredRecords.length === 0
-            ? html`<p className="p-4 text-sm text-slate-500">
-                No streets match that search. Try another name or double-check your spelling.
-              </p>`
-            : html`<ul className="divide-y divide-slate-200">
+            ? html`<div className="p-6 text-center">
+                <div className="text-4xl mb-3">🔍</div>
+                <p className="text-sm text-gray-500">
+                  No streets match that search. Try another name or double-check your spelling.
+                </p>
+              </div>`
+            : html`<ul className="divide-y divide-gray-200">
                 ${filteredRecords.map((record) => {
                   const isActive = record.id === activeId;
                   return html`<li key=${record.id}>
                     <button
                       type="button"
                       onClick=${() => setActiveId(record.id)}
-                      className=${`flex w-full items-center justify-between px-4 py-3 text-left transition ${
-                        isActive ? 'bg-slate-100' : 'hover:bg-slate-50'
+                      className=${`flex w-full items-center justify-between px-4 py-4 text-left transition-all duration-200 card-hover ${
+                        isActive 
+                          ? 'bg-green-50 border-l-4 border-l-green-500 shadow-sm' 
+                          : 'hover:bg-gray-50 hover:border-l-4 hover:border-l-gray-300'
                       }`}
                     >
-                      <div>
-                        <p className="font-medium text-slate-900">${record.street}</p>
-                        <p className="text-sm text-slate-500">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">${record.street}</p>
+                        <p className="text-sm text-gray-500 mt-1">
                           Route ${record.routeNumber || '--'}
                         </p>
                       </div>
@@ -187,49 +319,61 @@
               </ul>`;
 
         const detailBody = selectedRecord
-          ? html`<dl className="mt-4 space-y-3 text-sm">
-              <div className="flex items-start justify-between">
-                <dt className="text-slate-600">Street</dt>
-                <dd className="font-medium text-slate-900">${selectedRecord.street}</dd>
-              </div>
-              <div className="flex items-start justify-between">
-                <dt className="text-slate-600">Route</dt>
-                <dd className="font-medium text-slate-900">${selectedRecord.routeNumber || '--'}</dd>
-              </div>
-              <div className="flex items-start justify-between">
-                <dt className="text-slate-600">Status</dt>
-                <dd>
+          ? html`<div className="space-y-4">
+              <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-green-800">${selectedRecord.street}</h3>
                   <${StatusBadge} status=${selectedRecord.status || 'Unknown'} />
-                </dd>
+                </div>
+                <p className="text-sm text-green-700">Route ${selectedRecord.routeNumber || '--'}</p>
               </div>
-              <div className="flex items-start justify-between">
-                <dt className="text-slate-600">Date started</dt>
-                <dd className="font-medium text-slate-900">
-                  ${formatDate(selectedRecord.dateStarted)}
-                </dd>
-              </div>
-              <div className="flex items-start justify-between">
-                <dt className="text-slate-600">Date completed</dt>
-                <dd className="font-medium text-slate-900">
-                  ${formatDate(selectedRecord.dateCompleted)}
-                </dd>
-              </div>
-            </dl>`
+              
+              <dl className="space-y-3">
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <dt className="text-sm font-medium text-gray-600 flex items-center">
+                    <span className="mr-2">📅</span>
+                    Date Started
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    ${formatDate(selectedRecord.dateStarted)}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <dt className="text-sm font-medium text-gray-600 flex items-center">
+                    <span className="mr-2">✅</span>
+                    Date Completed
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    ${formatDate(selectedRecord.dateCompleted)}
+                  </dd>
+                </div>
+              </dl>
+            </div>`
           : filteredRecords.length === 0
-          ? html`<p className="mt-4 text-sm text-slate-500">
-              Start typing to find your street and see its pickup details.
-            </p>`
-          : html`<p className="mt-4 text-sm text-slate-500">
-              Select a street from the list to view its route and collection dates.
-            </p>`;
+          ? html`<div className="text-center py-8">
+              <div className="text-4xl mb-3">🏠</div>
+              <p className="text-sm text-gray-500">
+                Start typing to find your street and see its pickup details.
+              </p>
+            </div>`
+          : html`<div className="text-center py-8">
+              <div className="text-4xl mb-3">📍</div>
+              <p className="text-sm text-gray-500">
+                Select a street from the list to view its route and collection dates.
+              </p>
+            </div>`;
 
         mainContent = html`<div className="mt-8 grid gap-6 lg:grid-cols-[2fr,3fr]">
-          <section aria-label="Street results" className="space-y-3">
-            <div className="flex items-center justify-between text-sm text-slate-500">
-              <span>
-                ${filteredRecords.length}
-                ${filteredRecords.length === 1 ? ' result' : ' results'}
-              </span>
+          <section aria-label="Street results" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-600">
+                  ${filteredRecords.length} ${filteredRecords.length === 1 ? 'result' : 'results'}
+                </span>
+                ${filteredRecords.length > 0 ? html`<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  ${filteredRecords.filter(r => r.status === 'Completed').length} completed
+                </span>` : null}
+              </div>
               ${searchTerm
                 ? html`<button
                     type="button"
@@ -237,56 +381,75 @@
                       setSearchTerm('');
                       setActiveId(null);
                     }}
-                    className="text-sky-600 hover:text-sky-700"
+                    className="text-sm text-green-600 hover:text-green-700 font-medium"
                   >
                     Clear search
                   </button>`
                 : null}
             </div>
-            <div className="max-h-80 overflow-y-auto rounded-lg border border-slate-200">
+            <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
               ${resultsList}
             </div>
           </section>
 
           <section aria-live="polite" aria-label="Street details" className="space-y-4">
-            <div className="rounded-lg border border-slate-200 p-6">
-              <h2 className="text-lg font-semibold text-slate-900">Collection details</h2>
+            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <span className="mr-2">📋</span>
+                Collection Details
+              </h2>
               ${detailBody}
             </div>
-            <p className="text-xs text-slate-500">
-              This information reflects the most recent update from the Westlake Service Department.
-            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <p className="text-xs text-blue-700 flex items-center">
+                <span className="mr-2">ℹ️</span>
+                This information reflects the most recent update from the Westlake Service Department.
+              </p>
+            </div>
           </section>
         </div>`;
       }
 
-      return html`<div className="min-h-screen bg-slate-100 px-4 py-10">
-        <div className="mx-auto flex max-w-4xl flex-col gap-6">
+      return html`<div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 px-4 py-10">
+        <div className="mx-auto flex max-w-6xl flex-col gap-8">
           <header className="text-center">
-            <h1 className="text-3xl font-semibold text-slate-900">
-              Westlake Leaf Collection Tracker
-            </h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Search your street to see the latest pickup status. Updated daily by the Service Department.
-            </p>
+            <div className="bg-white rounded-2xl shadow-lg p-8 border border-green-200">
+              <div className="flex items-center justify-center mb-4">
+                <div className="text-4xl mr-3">🍂</div>
+                <h1 className="text-4xl font-bold text-green-800">
+                  Westlake Leaf Collection Tracker
+                </h1>
+              </div>
+              <p className="text-lg text-gray-600 mb-2">
+                Search your street to see the latest pickup status
+              </p>
+              <p className="text-sm text-gray-500">
+                Updated daily by the Westlake Service Department
+              </p>
+            </div>
           </header>
 
-          <main className="rounded-xl bg-white p-6 shadow-lg ring-1 ring-slate-200">
-            <div className="flex flex-col gap-4">
-              <label className="text-sm font-medium text-slate-700" htmlFor="street-search">
-                Street name
-              </label>
-              <input
-                id="street-search"
-                type="search"
-                placeholder="Start typing to find your street"
-                value=${searchTerm}
-                onChange=${(event) => setSearchTerm(event.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 text-base shadow-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
-              />
+          <main className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+            <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+              <div className="flex flex-col gap-4">
+                <label className="text-sm font-medium text-white flex items-center" htmlFor="street-search">
+                  <span className="mr-2">🔍</span>
+                  Search for your street
+                </label>
+                <input
+                  id="street-search"
+                  type="search"
+                  placeholder="Start typing to find your street..."
+                  value=${searchTerm}
+                  onChange=${(event) => setSearchTerm(event.target.value)}
+                  className="w-full rounded-lg border-0 px-4 py-3 text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 bg-white text-gray-900 placeholder-gray-500"
+                />
+              </div>
             </div>
-
-            ${mainContent}
+            
+            <div className="p-6">
+              ${mainContent}
+            </div>
           </main>
         </div>
       </div>`;
