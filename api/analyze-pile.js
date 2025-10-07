@@ -159,45 +159,115 @@ function parseN8NResponse(n8nResponse) {
     
     // Parse the content to extract compliance information
     const isApproved = content.includes('✅ **APPROVED**') || content.includes('**APPROVED**');
-    const hasViolations = content.includes('**Violations or Issues Found:**') && 
-                          !content.includes('**None observed**') && 
-                          !content.includes('**No actions needed**');
+    const needsCorrection = content.includes('🚫 NEEDS CORRECTION') || content.includes('**NEEDS CORRECTION**');
     
-    // Extract issues from the content
+    // Extract issues from the content - look for various violation patterns
     const issues = [];
     const suggestions = [];
     
-    if (hasViolations) {
-      // Look for violation patterns in the content
-      const violationMatch = content.match(/\*\*Violations or Issues Found:\*\*\n([\s\S]*?)(?:\n---|\n\*\*|$)/);
+    // Look for violation patterns in different formats
+    const violationPatterns = [
+      /\*\*Violations\/Issues Found:\*\*\n([\s\S]*?)(?:\n---|\n\*\*|$)/,
+      /\*\*Violations or Issues Found:\*\*\n([\s\S]*?)(?:\n---|\n\*\*|$)/,
+      /### 4\. \*\*Violations\/Issues Found:\*\*\n([\s\S]*?)(?:\n---|\n\*\*|$)/,
+      /### 4\. \*\*Violations or Issues Found:\*\*\n([\s\S]*?)(?:\n---|\n\*\*|$)/
+    ];
+    
+    for (const pattern of violationPatterns) {
+      const violationMatch = content.match(pattern);
       if (violationMatch) {
         const violationText = violationMatch[1];
         const violationLines = violationText.split('\n').filter(line => 
           line.trim() && 
           !line.includes('None observed') && 
-          !line.includes('No actions needed')
+          !line.includes('No actions needed') &&
+          !line.includes('No violations found')
         );
-        issues.push(...violationLines.map(line => line.replace(/^[-•]\s*/, '').trim()).filter(Boolean));
+        issues.push(...violationLines.map(line => line.replace(/^[-•❌]\s*/, '').trim()).filter(Boolean));
+        break;
       }
     }
     
-    // Extract suggestions from actionable instructions
-    const instructionMatch = content.match(/\*\*Actionable Instructions[^:]*:\*\*\n([\s\S]*?)(?:\n---|\n\*\*|$)/);
-    if (instructionMatch) {
-      const instructionText = instructionMatch[1];
-      const instructionLines = instructionText.split('\n').filter(line => 
-        line.trim() && 
-        !line.includes('No actions needed') &&
-        !line.includes('No corrections were needed')
-      );
-      suggestions.push(...instructionLines.map(line => line.replace(/^[-•]\s*/, '').trim()).filter(Boolean));
+    // If no specific violations found, look for guideline violations in the content
+    if (issues.length === 0) {
+      const guidelineViolations = [];
+      
+      // Look for brush guideline violations
+      if (content.includes('Brush Guidelines Violated:')) {
+        const brushMatch = content.match(/Brush Guidelines Violated:\n([\s\S]*?)(?:\n####|\n---|\n\*\*|$)/);
+        if (brushMatch) {
+          const brushText = brushMatch[1];
+          const brushLines = brushText.split('\n').filter(line => 
+            line.trim() && line.includes('❌')
+          );
+          guidelineViolations.push(...brushLines.map(line => line.replace(/^[-•❌]\s*/, '').trim()).filter(Boolean));
+        }
+      }
+      
+      // Look for leaves guideline violations
+      if (content.includes('Leaves Guidelines Violated:')) {
+        const leavesMatch = content.match(/Leaves Guidelines Violated:\n([\s\S]*?)(?:\n####|\n---|\n\*\*|$)/);
+        if (leavesMatch) {
+          const leavesText = leavesMatch[1];
+          const leavesLines = leavesText.split('\n').filter(line => 
+            line.trim() && line.includes('❌')
+          );
+          guidelineViolations.push(...leavesLines.map(line => line.replace(/^[-•❌]\s*/, '').trim()).filter(Boolean));
+        }
+      }
+      
+      issues.push(...guidelineViolations);
     }
     
-    // If no specific suggestions found, add general ones based on compliance
+    // Extract suggestions from actionable instructions or generate based on violations
+    const instructionPatterns = [
+      /\*\*Actionable Instructions[^:]*:\*\*\n([\s\S]*?)(?:\n---|\n\*\*|$)/,
+      /### 5\. \*\*Actionable Instructions[^:]*:\*\*\n([\s\S]*?)(?:\n---|\n\*\*|$)/
+    ];
+    
+    for (const pattern of instructionPatterns) {
+      const instructionMatch = content.match(pattern);
+      if (instructionMatch) {
+        const instructionText = instructionMatch[1];
+        const instructionLines = instructionText.split('\n').filter(line => 
+          line.trim() && 
+          !line.includes('No actions needed') &&
+          !line.includes('No corrections were needed')
+        );
+        suggestions.push(...instructionLines.map(line => line.replace(/^[-•]\s*/, '').trim()).filter(Boolean));
+        break;
+      }
+    }
+    
+    // If no specific suggestions found, generate based on violations
     if (suggestions.length === 0) {
       if (isApproved) {
         suggestions.push('✅ Your pile meets all collection guidelines!');
         suggestions.push('✅ No changes needed - ready for collection');
+      } else if (needsCorrection) {
+        // Generate specific suggestions based on the content
+        if (content.includes('mixed pile') || content.includes('Mix of')) {
+          suggestions.push('❌ Separate brush and leaves into different piles');
+          suggestions.push('❌ Brush must be bundled and tied with non-metallic binder');
+          suggestions.push('❌ Leaves must be loose and separate from brush');
+        }
+        if (content.includes('not bundled')) {
+          suggestions.push('❌ Bundle brush with non-metallic ties');
+          suggestions.push('❌ Align cut ends facing the same direction');
+        }
+        if (content.includes('thorny') || content.includes('pricker')) {
+          suggestions.push('❌ Remove thorny branches or bundle them separately');
+        }
+        if (content.includes('Mixed with leaves')) {
+          suggestions.push('❌ Keep leaves and brush completely separate');
+        }
+        
+        // Add general suggestions if no specific ones found
+        if (suggestions.length === 0) {
+          suggestions.push('Please review the guidelines and make necessary adjustments');
+          suggestions.push('Ensure leaves are loose and not bagged');
+          suggestions.push('Keep pile at least 3 feet from the street');
+        }
       } else {
         suggestions.push('Please review the guidelines and make necessary adjustments');
         suggestions.push('Ensure leaves are loose and not bagged');
@@ -216,9 +286,12 @@ function parseN8NResponse(n8nResponse) {
     if (content.includes('appears to') || content.includes('may be')) {
       confidence = 70;
     }
+    if (content.includes('not verifiable') || content.includes('not visible')) {
+      confidence = 60;
+    }
     
     return {
-      compliant: isApproved,
+      compliant: isApproved && !needsCorrection,
       confidence: confidence,
       issues: issues,
       suggestions: suggestions,
