@@ -20,48 +20,74 @@ export default async function handler(req, res) {
     }
   }
 
-  const image = payload?.image;
-  if (!image) {
+  const imageData = payload?.image;
+  if (!imageData) {
     return res.status(400).json({ error: 'Missing image data' });
   }
 
-  // Simulate async analysis time
-  await new Promise((resolve) => setTimeout(resolve, 600));
+  const { filename } = payload ?? {};
+  const webhookUrl = process.env.N8N_WEBHOOK_URL;
 
-  const issues = [];
-  const suggestions = [];
-  const random = Math.random();
-
-  if (random < 0.25) {
-    issues.push('Leaves look bagged; loose piles are required.');
-    suggestions.push('Empty leaves from bags so the vacuum trucks can collect them.');
+  if (!webhookUrl) {
+    return res.status(200).json({
+      compliant: true,
+      confidence: 75,
+      issues: [],
+      suggestions: [
+        'N8N webhook URL is not configured. Update the N8N_WEBHOOK_URL environment variable to enable live analysis.',
+        'For now, assume the pile follows standard guidelines: keep it loose, reachable, and free from large debris.',
+      ],
+      analysisTimestamp: new Date().toISOString(),
+    });
   }
 
-  if (random < 0.18) {
-    issues.push('Pile may be too close to the curb.');
-    suggestions.push('Shift the pile back at least three feet to keep storm drains clear.');
-  }
+  try {
+    const webhookResponse = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: imageData, filename }),
+    });
 
-  if (random < 0.12) {
-    issues.push('Large branches detected in the pile.');
-    suggestions.push('Remove sticks thicker than three inches to avoid clogging the vacuums.');
-  }
+    const responseText = await webhookResponse.text();
+    if (!webhookResponse.ok) {
+      throw new Error(`Webhook returned status ${webhookResponse.status}: ${responseText}`);
+    }
 
-  if (random < 0.08) {
-    issues.push('Non-leaf debris mixed with pile.');
-    suggestions.push('Remove trash or mixed yard waste; only leaves are accepted.');
-  }
+    if (!responseText) {
+      return res.status(200).json({
+        compliant: false,
+        confidence: 0,
+        issues: ['The automation returned an empty response.'],
+        suggestions: ['Check the n8n workflow output formatting and try again.'],
+        analysisTimestamp: new Date().toISOString(),
+      });
+    }
 
-  const compliant = issues.length === 0;
-  if (compliant) {
-    suggestions.push('Your pile looks compliant. Keep it loose and reachable for crews.');
-  }
+    let webhookPayload;
+    try {
+      webhookPayload = JSON.parse(responseText);
+    } catch (error) {
+      return res.status(200).json({
+        compliant: false,
+        confidence: 0,
+        issues: ['Received a non-JSON response from the automation.'],
+        suggestions: ['Ensure the n8n workflow returns valid JSON.'],
+        rawResponse: responseText,
+        analysisTimestamp: new Date().toISOString(),
+      });
+    }
 
-  return res.status(200).json({
-    compliant,
-    confidence: compliant ? 86 : 70,
-    issues,
-    suggestions,
-    analysisTimestamp: new Date().toISOString(),
-  });
+    return res.status(200).json(webhookPayload);
+  } catch (error) {
+    console.error('Error calling n8n webhook:', error);
+    return res.status(502).json({
+      error: 'Failed to contact leaf pile analysis automation.',
+      details: error.message,
+      compliant: false,
+      confidence: 0,
+      issues: ['The automation could not be reached or responded with an error.'],
+      suggestions: ['Please retry in a few minutes or contact support if the issue persists.'],
+      analysisTimestamp: new Date().toISOString(),
+    });
+  }
 }
