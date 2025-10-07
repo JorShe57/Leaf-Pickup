@@ -45,6 +45,19 @@ export default async function handler(req, res) {
     console.log('Calling N8N webhook:', webhookUrl);
     console.log('Image data size:', imageData.length);
     
+    // Convert base64 to Blob for file upload
+    const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
+    const binaryData = Buffer.from(base64Data, 'base64');
+    const blob = new Blob([binaryData], { type: 'image/jpeg' });
+    
+    // Create FormData for multipart/form-data upload
+    const formData = new FormData();
+    formData.append('Photo', blob, filename || 'leaf-pile.jpg');
+    formData.append('timestamp', new Date().toISOString());
+    formData.append('source', 'westlake-leaf-tracker');
+    
+    console.log('Sending FormData with Photo field');
+    
     // Add timeout and better error handling
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
@@ -52,14 +65,10 @@ export default async function handler(req, res) {
     const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 
-        'Content-Type': 'application/json',
         'User-Agent': 'Westlake-Leaf-Tracker/1.0'
+        // Note: Don't set Content-Type header - let fetch set it automatically for FormData
       },
-      body: JSON.stringify({ 
-        image: imageData, 
-        filename: filename || 'leaf-pile.jpg',
-        timestamp: new Date().toISOString()
-      }),
+      body: formData,
       signal: controller.signal
     });
 
