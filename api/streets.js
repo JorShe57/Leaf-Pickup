@@ -11,24 +11,43 @@ export default async function handler(req, res) {
     const BASE_ID = 'appsnAjoLIt7DzTzF';
     const TABLE_ID = 'tbl4UnzoSzUFAnoKH';
   
+    if (!AIRTABLE_API_KEY) {
+      console.error('Missing Airtable API key');
+      return res.status(500).json({ error: 'Server misconfiguration' });
+    }
+  
     try {
-      const response = await fetch(
-        `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`,
-        {
+      const allRecords = [];
+      const baseUrl = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`;
+      let nextOffset;
+  
+      do {
+        const url = new URL(baseUrl);
+        url.searchParams.set('pageSize', '100');
+  
+        if (nextOffset) {
+          url.searchParams.set('offset', nextOffset);
+        }
+  
+        const response = await fetch(url, {
           headers: {
             Authorization: `Bearer ${AIRTABLE_API_KEY}`,
           },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Failed to fetch from Airtable (status ${response.status})`);
         }
-      );
   
-      if (!response.ok) {
-        throw new Error('Failed to fetch from Airtable');
-      }
+        const page = await response.json();
+        if (Array.isArray(page.records)) {
+          allRecords.push(...page.records);
+        }
   
-      const data = await response.json();
-      
-      // Transform the data to a cleaner format
-      const records = data.records.map(record => ({
+        nextOffset = page.offset;
+      } while (nextOffset);
+  
+      const records = allRecords.map(record => ({
         id: record.id,
         routeNumber: record.fields['Route Number'],
         street: record.fields['Street'],
