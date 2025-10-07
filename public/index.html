@@ -102,6 +102,36 @@
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(26, 107, 46, 0.15);
     }
+
+    /* Background image styling */
+    .app-background {
+      background-image: url('/images/sebastian-volkel-7QT_puk5CJQ-unsplash.jpg.webp');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    .app-background::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(26, 107, 46, 0.85) 0%,
+        rgba(25, 55, 95, 0.75) 50%,
+        rgba(26, 107, 46, 0.85) 100%
+      );
+      z-index: 1;
+    }
+
+    .app-content {
+      position: relative;
+      z-index: 2;
+    }
   </style>
 </head>
 <body>
@@ -201,6 +231,7 @@
       const [error, setError] = useState(null);
       const [searchTerm, setSearchTerm] = useState('');
       const [activeId, setActiveId] = useState(null);
+      const [sortBy, setSortBy] = useState('street');
 
       useEffect(() => {
         let isMounted = true;
@@ -238,10 +269,29 @@
       }, []);
 
       const sortedRecords = useMemo(() => {
-        return [...records]
-          .filter((record) => Boolean(record.street))
-          .sort((a, b) => a.street.localeCompare(b.street));
-      }, [records]);
+        const filtered = [...records].filter((record) => Boolean(record.street));
+        
+        return filtered.sort((a, b) => {
+          switch (sortBy) {
+            case 'status':
+              const statusOrder = { 'Not Started': 0, 'In Progress': 1, 'Completed': 2 };
+              const aStatus = normalizeStatus(a.status || 'Unknown');
+              const bStatus = normalizeStatus(b.status || 'Unknown');
+              const aOrder = statusOrder[aStatus] ?? 3;
+              const bOrder = statusOrder[bStatus] ?? 3;
+              if (aOrder !== bOrder) return aOrder - bOrder;
+              return a.street.localeCompare(b.street);
+            case 'route':
+              const aRoute = parseInt(a.routeNumber) || 999;
+              const bRoute = parseInt(b.routeNumber) || 999;
+              if (aRoute !== bRoute) return aRoute - bRoute;
+              return a.street.localeCompare(b.street);
+            case 'street':
+            default:
+              return a.street.localeCompare(b.street);
+          }
+        });
+      }, [records, sortBy]);
 
       const filteredRecords = useMemo(() => {
         const term = searchTerm.trim().toLowerCase();
@@ -374,26 +424,44 @@
                   ${filteredRecords.filter(r => r.status === 'Completed').length} completed
                 </span>` : null}
               </div>
-              ${searchTerm
-                ? html`<button
-                    type="button"
-                    onClick=${() => {
-                      setSearchTerm('');
-                      setActiveId(null);
-                    }}
-                    className="text-sm text-green-600 hover:text-green-700 font-medium"
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
+                  <label htmlFor="sort-select" className="text-sm font-medium text-gray-600 flex items-center">
+                    <span className="mr-1">🔀</span>
+                    Sort by:
+                  </label>
+                  <select
+                    id="sort-select"
+                    value=${sortBy}
+                    onChange=${(e) => setSortBy(e.target.value)}
+                    className="text-sm border border-gray-300 rounded-md px-3 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
                   >
-                    Clear search
-                  </button>`
-                : null}
+                    <option value="street">Street Name</option>
+                    <option value="status">Status</option>
+                    <option value="route">Route Number</option>
+                  </select>
+                </div>
+                ${searchTerm
+                  ? html`<button
+                      type="button"
+                      onClick=${() => {
+                        setSearchTerm('');
+                        setActiveId(null);
+                      }}
+                      className="text-sm text-green-600 hover:text-green-700 font-medium"
+                    >
+                      Clear search
+                    </button>`
+                  : null}
+              </div>
             </div>
-            <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+            <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white/90 backdrop-blur-sm shadow-sm">
               ${resultsList}
             </div>
           </section>
 
           <section aria-live="polite" aria-label="Street details" className="space-y-4">
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="rounded-lg border border-gray-200 bg-white/90 backdrop-blur-sm p-6 shadow-sm">
               <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <span className="mr-2">📋</span>
                 Collection Details
@@ -410,10 +478,10 @@
         </div>`;
       }
 
-      return html`<div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 px-4 py-10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8">
+      return html`<div className="min-h-screen app-background px-4 py-10">
+        <div className="mx-auto flex max-w-6xl flex-col gap-8 app-content">
           <header className="text-center">
-            <div className="bg-white rounded-2xl shadow-lg p-8 border border-green-200">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-8 border border-green-200">
               <div className="flex items-center justify-center mb-4">
                 <div className="text-4xl mr-3">🍂</div>
                 <h1 className="text-4xl font-bold text-green-800">
@@ -429,7 +497,7 @@
             </div>
           </header>
 
-          <main className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+          <main className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
             <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
               <div className="flex flex-col gap-4">
                 <label className="text-sm font-medium text-white flex items-center" htmlFor="street-search">
