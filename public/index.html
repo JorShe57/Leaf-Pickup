@@ -254,12 +254,60 @@
     function CameraAnalysis() {
       const [isAnalyzing, setIsAnalyzing] = useState(false);
       const [analysisResult, setAnalysisResult] = useState(null);
-      const [cameraMode, setCameraMode] = useState('photo'); // 'photo' or 'video'
-       const [stream, setStream] = useState(null);
-       const [error, setError] = useState(null);
-       const [videoReady, setVideoReady] = useState(false);
-       const videoRef = React.useRef(null);
-       const canvasRef = React.useRef(null);
+      const [stream, setStream] = useState(null);
+      const [error, setError] = useState(null);
+      const [videoReady, setVideoReady] = useState(false);
+      const videoRef = React.useRef(null);
+      const canvasRef = React.useRef(null);
+      const playbackCheckRef = React.useRef(null);
+
+      function clearPlaybackMonitor() {
+        if (playbackCheckRef.current) {
+          clearInterval(playbackCheckRef.current);
+          playbackCheckRef.current = null;
+        }
+      }
+
+      const attachStreamToVideo = (mediaStream) => {
+        const videoEl = videoRef.current;
+        if (!videoEl) {
+          console.warn('Camera preview element is not ready yet.');
+          requestAnimationFrame(() => attachStreamToVideo(mediaStream));
+          return;
+        }
+
+        if (videoEl.srcObject !== mediaStream) {
+          videoEl.srcObject = mediaStream;
+        }
+
+        const tryPlay = () => {
+          const playPromise = videoEl.play();
+          if (playPromise && typeof playPromise.then === 'function') {
+            playPromise
+              .then(() => setVideoReady(true))
+              .catch((err) => {
+                console.warn('Autoplay blocked, retrying muted playback.', err);
+                videoEl.muted = true;
+                return videoEl.play().then(
+                  () => setVideoReady(true),
+                  (innerErr) => {
+                    console.error('Video playback failed:', innerErr);
+                    setError('Unable to start the camera preview. Please check permissions and try again.');
+                    setVideoReady(false);
+                  }
+                );
+              });
+          } else {
+            setVideoReady(true);
+          }
+        };
+
+        if (videoEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+          tryPlay();
+        } else {
+          videoEl.addEventListener('loadedmetadata', tryPlay, { once: true });
+        }
+      };
 
       const complianceGuidelines = [
         "✅ Leaves should be loose (not bagged)",
@@ -269,37 +317,59 @@
         "✅ Pile should be manageable size (not too large)"
       ];
 
-       const startCamera = async () => {
-         try {
-           setError(null);
-           setVideoReady(false);
-           console.log('Requesting camera access...');
-           
-           const mediaStream = await navigator.mediaDevices.getUserMedia({
-             video: { 
-               facingMode: 'environment', // Use back camera on mobile
-               width: { ideal: 1280 },
-               height: { ideal: 720 }
-             }
-           });
-           
-           console.log('Camera stream obtained:', mediaStream);
-           setStream(mediaStream);
-           
-         } catch (error) {
-           console.error('Camera access denied:', error);
-           setError('Camera access is required for pile analysis. Please allow camera access and try again.');
-         }
-       };
+      const startCamera = async () => {
+        try {
+          setError(null);
+          setVideoReady(false);
+          clearPlaybackMonitor();
+
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            setError('Camera access is not supported on this device. Please upload a photo instead.');
+            return;
+          }
+
+          stopCamera();
+          console.log('Requesting camera access...');
+
+          const mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: 'environment' }, // Use back camera on mobile
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            },
+            audio: false
+          });
+
+          console.log('Camera stream obtained:', mediaStream);
+          setStream(mediaStream);
+          requestAnimationFrame(() => attachStreamToVideo(mediaStream));
+        } catch (error) {
+          console.error('Camera access denied:', error);
+          setError('Camera access is required for pile analysis. Please allow camera access and try again.');
+        }
+      };
 
       const stopCamera = () => {
+        clearPlaybackMonitor();
         if (stream) {
           stream.getTracks().forEach(track => track.stop());
-          setStream(null);
+        }
+        setStream(null);
+        setVideoReady(false);
+
+        const videoEl = videoRef.current;
+        if (videoEl) {
+          videoEl.pause();
+          videoEl.srcObject = null;
         }
       };
 
       const capturePhoto = () => {
+        if (!videoReady) {
+          setError('Camera preview is still starting. Please wait a moment and try again.');
+          return;
+        }
+
         if (videoRef.current && canvasRef.current) {
           const canvas = canvasRef.current;
           const video = videoRef.current;
@@ -353,59 +423,78 @@
         setError(null);
       };
 
-       React.useEffect(() => {
-         return () => {
-           stopCamera();
-         };
-       }, []);
+      React.useEffect(() => {
+        return () => {
+          stopCamera();
+        };
+      }, []);
 
-       // Handle video stream when it changes
-       React.useEffect(() => {
-         if (stream && videoRef.current) {
-           console.log('Setting video stream...');
-           const video = videoRef.current;
-           
-           // Clear any existing stream first
-           if (video.srcObject) {
-             video.srcObject = null;
-           }
-           
-           // Set the new stream
-           video.srcObject = stream;
-           
-           // Force play the video
-           video.play().then(() => {
-             console.log('Video is playing');
-           }).catch(err => {
-             console.error('Error playing video:', err);
-             // Try again after a short delay
-             setTimeout(() => {
-               video.play().catch(console.error);
-             }, 100);
-           });
-           
-           // Add event listeners for debugging
-           video.onloadedmetadata = () => {
-             console.log('Video metadata loaded');
-             setVideoReady(true);
-           };
-           
-           video.oncanplay = () => {
-             console.log('Video can play');
-             setVideoReady(true);
-           };
-           
-           video.onplay = () => {
-             console.log('Video is playing');
-             setVideoReady(true);
-           };
-           
-           video.onerror = (e) => {
-             console.error('Video error:', e);
-             setVideoReady(false);
-           };
-         }
-       }, [stream]);
+      React.useEffect(() => {
+        if (!stream) {
+          clearPlaybackMonitor();
+          const videoEl = videoRef.current;
+          if (videoEl) {
+            videoEl.pause();
+            videoEl.srcObject = null;
+          }
+          setVideoReady(false);
+          return;
+        }
+
+        clearPlaybackMonitor();
+
+        const checkPlayback = () => {
+          const videoEl = videoRef.current;
+          if (!videoEl) {
+            setVideoReady(false);
+            return;
+          }
+
+          const hasData = videoEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA;
+          const isPlaying = hasData && !videoEl.paused && !videoEl.ended;
+
+          if (!isPlaying) {
+            setVideoReady(false);
+            attachStreamToVideo(stream);
+          } else {
+            setVideoReady(true);
+            setError(null);
+          }
+        };
+
+        requestAnimationFrame(() => attachStreamToVideo(stream));
+
+        const videoEl = videoRef.current;
+        if (videoEl) {
+          const markReady = () => setVideoReady(true);
+          const handleError = (event) => {
+            console.error('Video error:', event);
+            setVideoReady(false);
+          };
+
+          videoEl.addEventListener('playing', markReady);
+          videoEl.addEventListener('loadeddata', markReady);
+          videoEl.addEventListener('pause', checkPlayback);
+          videoEl.addEventListener('stalled', checkPlayback);
+          videoEl.addEventListener('suspend', checkPlayback);
+          videoEl.addEventListener('error', handleError);
+
+          playbackCheckRef.current = setInterval(checkPlayback, 2000);
+
+          return () => {
+            videoEl.removeEventListener('playing', markReady);
+            videoEl.removeEventListener('loadeddata', markReady);
+            videoEl.removeEventListener('pause', checkPlayback);
+            videoEl.removeEventListener('stalled', checkPlayback);
+            videoEl.removeEventListener('suspend', checkPlayback);
+            videoEl.removeEventListener('error', handleError);
+            clearPlaybackMonitor();
+            if (videoEl.srcObject === stream) {
+              videoEl.srcObject = null;
+            }
+          };
+        }
+      }, [stream]);
 
       return html`
         <div className="space-y-6">
@@ -480,9 +569,10 @@
                  
                  ${stream && !videoReady && html`
                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 rounded-lg">
-                     <div className="text-center text-white">
+                     <div className="text-center text-white space-y-1">
                        <div className="loading-spinner mb-2 mx-auto"></div>
                        <p className="text-sm">Loading camera feed...</p>
+                       <p className="text-xs text-gray-200">If the preview stays blank, check camera permissions and try again.</p>
                      </div>
                    </div>
                  `}
