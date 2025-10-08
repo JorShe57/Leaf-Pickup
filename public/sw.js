@@ -75,14 +75,20 @@ self.addEventListener('fetch', (event) => {
   
   // Handle API requests (network first, fallback to cache)
   if (url.pathname.startsWith('/api/')) {
+    // Don't cache POST requests
+    if (request.method === 'POST') {
+      event.respondWith(fetch(request));
+      return;
+    }
+    
     event.respondWith(
       fetch(request)
         .then((response) => {
           // Clone response before caching
           const responseClone = response.clone();
           
-          // Cache successful API responses
-          if (response.ok) {
+          // Cache successful API responses (GET only)
+          if (response.ok && request.method === 'GET') {
             caches.open(API_CACHE).then((cache) => {
               cache.put(request, responseClone);
             });
