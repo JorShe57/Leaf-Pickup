@@ -932,6 +932,18 @@
                     ${formatDate(selectedRecord.dateCompleted)}
                   </dd>
                 </div>
+                
+                ${selectedRecord.notes && selectedRecord.notes.trim() && html`
+                  <div className="py-2">
+                    <dt className="text-sm font-medium text-gray-600 flex items-center mb-2">
+                      <span className="mr-2">📝</span>
+                      Notes
+                    </dt>
+                    <dd className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg border">
+                      ${selectedRecord.notes}
+                    </dd>
+                  </div>
+                `}
               </dl>
             </div>`
           : filteredRecords.length === 0
@@ -1002,12 +1014,6 @@
                 Collection Details
               </h2>
               ${detailBody}
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-xs text-blue-700 flex items-center">
-                <span className="mr-2">ℹ️</span>
-                This information reflects the most recent update from the Westlake Service Department.
-              </p>
             </div>
           </section>
         </div>`;
