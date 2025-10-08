@@ -1625,36 +1625,18 @@
                 ${filteredRecords.filter(r => normalizeStatus(r.status) === 'Completed').length} completed
               </span>` : null}
             </div>
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-2">
-                <label htmlFor="sort-select" className="text-sm font-medium text-gray-600 flex items-center">
-                  <span className="mr-1">🔀</span>
-                  Sort by:
-                </label>
-                <select
-                  id="sort-select"
-                  value=${sortBy}
-                  onChange=${(e) => setSortBy(e.target.value)}
-                  className="text-sm border border-gray-300 rounded-md px-3 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
+            ${searchTerm
+              ? html`<button
+                  type="button"
+                  onClick=${() => {
+                    setSearchTerm('');
+                    setActiveId(null);
+                  }}
+                  className="text-sm text-green-600 hover:text-green-700 font-medium"
                 >
-                  <option value="street">Street Name</option>
-                  <option value="status">Status</option>
-                  <option value="route">Route Number</option>
-                </select>
-              </div>
-              ${searchTerm
-                ? html`<button
-                    type="button"
-                    onClick=${() => {
-                      setSearchTerm('');
-                      setActiveId(null);
-                    }}
-                    className="text-sm text-green-600 hover:text-green-700 font-medium"
-                  >
-                    Clear search
-                  </button>`
-                : null}
-            </div>
+                  Clear search
+                </button>`
+              : null}
           </div>
           <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white/90 backdrop-blur-sm shadow-sm scroll-container">
             ${resultsList}
