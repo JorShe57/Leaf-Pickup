@@ -54,6 +54,7 @@ export default async function handler(req, res) {
         dateStarted: record.fields['Date Started'],
         status: record.fields['Status'],
         dateCompleted: record.fields['Date Completed'],
+        notes: record.fields['Notes'] || '',
       }));
   
       res.status(200).json({ records });

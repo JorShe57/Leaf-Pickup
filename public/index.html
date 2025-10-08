@@ -245,6 +245,79 @@
       <p className="text-sm text-gray-600 text-center">${label}</p>`;
     }
 
+    function RouteModal({ record, isOpen, onClose }) {
+      if (!isOpen || !record) return null;
+
+      return html`
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Route Details</h3>
+              <button
+                onClick=${onClose}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-4 space-y-4">
+              <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-lg font-semibold text-green-800">${record.street}</h4>
+                  <${StatusBadge} status=${record.status || 'Unknown'} />
+                </div>
+                <p className="text-sm text-green-700">Route ${record.routeNumber || '--'}</p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <dt className="text-sm font-medium text-gray-600 flex items-center">
+                    <span className="mr-2">📅</span>
+                    Date Started
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    ${formatDate(record.dateStarted)}
+                  </dd>
+                </div>
+                
+                <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                  <dt className="text-sm font-medium text-gray-600 flex items-center">
+                    <span className="mr-2">✅</span>
+                    Date Completed
+                  </dt>
+                  <dd className="text-sm font-medium text-gray-900">
+                    ${formatDate(record.dateCompleted)}
+                  </dd>
+                </div>
+                
+                ${record.notes && record.notes.trim() && html`
+                  <div className="py-2">
+                    <dt className="text-sm font-medium text-gray-600 flex items-center mb-2">
+                      <span className="mr-2">📝</span>
+                      Notes
+                    </dt>
+                    <dd className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg border">
+                      ${record.notes}
+                    </dd>
+                  </div>
+                `}
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-xs text-blue-700 flex items-center">
+                  <span className="mr-2">ℹ️</span>
+                  This information reflects the most recent update from the Westlake Service Department.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     function formatReportContent(content) {
       if (!content) return '';
       
@@ -682,6 +755,8 @@
       const [activeId, setActiveId] = useState(null);
       const [sortBy, setSortBy] = useState('street');
       const [showAnalyzer, setShowAnalyzer] = useState(false);
+      const [modalRecord, setModalRecord] = useState(null);
+      const [isModalOpen, setIsModalOpen] = useState(false);
 
       useEffect(() => {
         let isMounted = true;
@@ -768,6 +843,16 @@
         return records.find((record) => record.id === activeId) ?? null;
       }, [records, activeId]);
 
+      const openModal = (record) => {
+        setModalRecord(record);
+        setIsModalOpen(true);
+      };
+
+      const closeModal = () => {
+        setIsModalOpen(false);
+        setModalRecord(null);
+      };
+
       let mainContent;
 
       if (loading) {
@@ -795,16 +880,11 @@
               </div>`
             : html`<ul className="divide-y divide-gray-200">
                 ${filteredRecords.map((record) => {
-                  const isActive = record.id === activeId;
                   return html`<li key=${record.id}>
                     <button
                       type="button"
-                      onClick=${() => setActiveId(record.id)}
-                      className=${`flex w-full items-center justify-between px-4 py-4 text-left transition-all duration-200 card-hover ${
-                        isActive 
-                          ? 'bg-green-50 border-l-4 border-l-green-500 shadow-sm' 
-                          : 'hover:bg-gray-50 hover:border-l-4 hover:border-l-gray-300'
-                      }`}
+                      onClick=${() => openModal(record)}
+                      className="flex w-full items-center justify-between px-4 py-4 text-left transition-all duration-200 card-hover hover:bg-gray-50 hover:border-l-4 hover:border-l-gray-300"
                     >
                       <div className="flex-1">
                         <p className="font-medium text-gray-900">${record.street}</p>
@@ -812,7 +892,12 @@
                           Route ${record.routeNumber || '--'}
                         </p>
                       </div>
-                      <${StatusBadge} status=${record.status || 'Unknown'} />
+                      <div className="flex items-center space-x-2">
+                        <${StatusBadge} status=${record.status || 'Unknown'} />
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </div>
                     </button>
                   </li>`;
                 })}
@@ -985,6 +1070,8 @@
             </div>
           </main>
         </div>
+        
+        <${RouteModal} record=${modalRecord} isOpen=${isModalOpen} onClose=${closeModal} />
       </div>`;
     }
 
