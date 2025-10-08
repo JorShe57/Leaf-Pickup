@@ -1208,6 +1208,102 @@
       `;
     }
 
+    /**
+     * ServiceMessages Component
+     * Displays messages from the service department fetched from Airtable
+     */
+    function ServiceMessages() {
+      const [messages, setMessages] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+
+      useEffect(() => {
+        let isMounted = true;
+
+        async function loadMessages() {
+          try {
+            const response = await fetch('/api/messages');
+            if (!response.ok) {
+              throw new Error('Unable to fetch messages.');
+            }
+
+            const payload = await response.json();
+            if (isMounted) {
+              setMessages(Array.isArray(payload.messages) ? payload.messages : []);
+            }
+          } catch (err) {
+            console.error('Error loading messages:', err);
+            if (isMounted) {
+              setError('Unable to load service messages.');
+            }
+          } finally {
+            if (isMounted) {
+              setLoading(false);
+            }
+          }
+        }
+
+        loadMessages();
+
+        return () => {
+          isMounted = false;
+        };
+      }, []);
+
+      // Don't render anything if loading, error, or no messages
+      if (loading || error || messages.length === 0) {
+        return null;
+      }
+
+      /**
+       * Format date for display
+       * @param {string} dateStr - ISO date string
+       * @returns {string} Formatted date
+       */
+      const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        try {
+          const date = new Date(dateStr);
+          return date.toLocaleDateString('en-US', { 
+            month: 'long', 
+            day: 'numeric', 
+            year: 'numeric' 
+          });
+        } catch (e) {
+          return dateStr;
+        }
+      };
+
+      return html`
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-4 md:p-6">
+          <div className="flex items-center mb-4">
+            <span className="text-2xl mr-2">📢</span>
+            <h2 className="text-xl md:text-2xl font-bold text-green-800">
+              Service Department Updates
+            </h2>
+          </div>
+          
+          <div className="space-y-3">
+            ${messages.map((msg) => html`
+              <div 
+                key=${msg.id}
+                className="bg-gray-50 rounded-lg p-4 border border-gray-200"
+              >
+                <p className="text-gray-800 text-base leading-relaxed mb-2">
+                  ${msg.message}
+                </p>
+                ${msg.dateCreated && html`
+                  <p className="text-sm text-gray-500">
+                    Posted on ${formatDate(msg.dateCreated)}
+                  </p>
+                `}
+              </div>
+            `)}
+          </div>
+        </div>
+      `;
+    }
+
     function App() {
       const [records, setRecords] = useState([]);
       const [loading, setLoading] = useState(true);
@@ -1439,6 +1535,8 @@
               </p>
             </div>
           </header>
+
+          <${ServiceMessages} />
 
           ${showAnalyzer ? html`
             <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
