@@ -779,6 +779,7 @@
         }, 500);
 
         try {
+          console.log('[Camera Analysis] Sending request to n8n...');
           const response = await fetch('/api/analyze-pile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -787,6 +788,8 @@
               filename: selectedFile ? selectedFile.name : 'leaf-pile.jpg',
             }),
           });
+          
+          console.log('[Camera Analysis] Response received:', response.status);
 
           if (!response.ok) {
             const error = new Error('Analysis request failed');
@@ -927,7 +930,13 @@
             </div>
 
             <button
-              onClick=${submitForAnalysis}
+              type="button"
+              onClick=${(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                submitForAnalysis();
+                return false;
+              }}
               disabled=${isSubmitting || isProcessingImage || !payloadImage}
               className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
