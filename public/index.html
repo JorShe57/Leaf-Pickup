@@ -492,6 +492,23 @@
       `;
     }
 
+    function isHtmlReportString(value) {
+      if (typeof value !== 'string') {
+        return false;
+      }
+
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return false;
+      }
+
+      if (/^<!DOCTYPE\s+html>/i.test(trimmed) || /^<html[\s>]/i.test(trimmed) || /<body[\s>]/i.test(trimmed)) {
+        return true;
+      }
+
+      return /<\/(article|section|main|header|footer|div|p|ul|ol|li|table|thead|tbody|tr|td|h[1-6])>/i.test(trimmed);
+    }
+
     function normalizeReportToText(value) {
       if (value === null || value === undefined) {
         return '';
@@ -506,6 +523,13 @@
       }
 
       if (typeof value === 'object') {
+        const htmlCandidateKeys = ['html', 'reportHtml', 'reportContent', 'content', 'body', 'markup', 'report'];
+        for (const key of htmlCandidateKeys) {
+          if (typeof value[key] === 'string' && isHtmlReportString(value[key])) {
+            return value[key];
+          }
+        }
+
         const parts = Object.entries(value)
           .map(([key, val]) => {
             const normalized = normalizeReportToText(val).trim();
@@ -530,32 +554,96 @@
       return String(value);
     }
 
-    function renderReportContent(content) {
-      const reportString = normalizeReportToText(content).trim();
+    function extractHtmlReportMarkup(reportString) {
+      const stripScripts = (input) =>
+        (input || '').replace(/<script[\s\S]*?<\/script>/gi, '');
 
-      if (!reportString) {
+      const cleaned = reportString.replace(/\r\n/g, '\n');
+      let styles = '';
+      let bodyContent = '';
+
+      if (typeof DOMParser !== 'undefined') {
+        try {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(cleaned, 'text/html');
+          if (doc) {
+            styles = Array.from(doc.querySelectorAll('style'))
+              .map((node) => node.outerHTML)
+              .join('\n');
+            bodyContent = doc.body && doc.body.innerHTML
+              ? doc.body.innerHTML
+              : cleaned;
+          }
+        } catch (_error) {
+          // Fallback to regex parsing below
+        }
+      }
+
+      if (!bodyContent) {
+        const bodyMatch = cleaned.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+        bodyContent = bodyMatch && bodyMatch[1] ? bodyMatch[1] : cleaned;
+      }
+
+      if (!styles) {
+        const headMatch = cleaned.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+        if (headMatch && headMatch[1]) {
+          styles = (headMatch[1].match(/<style[\s\S]*?<\/style>/gi) || []).join('\n');
+        }
+      }
+
+      const safeStyles = stripScripts(styles);
+      const safeBody = stripScripts(bodyContent);
+
+      return `${safeStyles}\n${safeBody}`.trim();
+    }
+
+    function extractHtmlMarkupFromContent(content) {
+      if (content === null || content === undefined) {
         return null;
       }
 
-      const isHtmlReport =
-        /^<!DOCTYPE html>/i.test(reportString) ||
-        /^<html[\s>]/i.test(reportString) ||
-        /<\/(p|div|section|ul|ol|li|h[1-6])>/i.test(reportString);
+      if (typeof content === 'string') {
+        return isHtmlReportString(content) ? extractHtmlReportMarkup(content) : null;
+      }
 
-      if (isHtmlReport) {
-        let extractedHtml = reportString;
-
-        try {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(reportString, 'text/html');
-          if (doc && doc.body) {
-            extractedHtml = doc.body.innerHTML || reportString;
+      if (Array.isArray(content)) {
+        for (const item of content) {
+          const markup = extractHtmlMarkupFromContent(item);
+          if (markup) {
+            return markup;
           }
-        } catch (_err) {
-          extractedHtml = reportString;
+        }
+        return null;
+      }
+
+      if (typeof content === 'object') {
+        const htmlCandidateKeys = ['html', 'reportHtml', 'reportContent', 'content', 'body', 'markup', 'report'];
+        for (const key of htmlCandidateKeys) {
+          if (typeof content[key] === 'string' && isHtmlReportString(content[key])) {
+            return extractHtmlReportMarkup(content[key]);
+          }
         }
 
-        return html`<div className="prose prose-sm max-w-none" dangerouslySetInnerHTML=${{ __html: extractedHtml }}></div>`;
+        for (const value of Object.values(content)) {
+          const markup = extractHtmlMarkupFromContent(value);
+          if (markup) {
+            return markup;
+          }
+        }
+      }
+
+      return null;
+    }
+
+    function renderReportContent(content) {
+      const htmlMarkup = extractHtmlMarkupFromContent(content);
+      if (htmlMarkup) {
+        return html`<div className="prose prose-sm max-w-none" dangerouslySetInnerHTML=${{ __html: htmlMarkup }}></div>`;
+      }
+
+      const reportString = normalizeReportToText(content).trim();
+      if (!reportString || isHtmlReportString(reportString)) {
+        return null;
       }
 
       const lines = reportString
