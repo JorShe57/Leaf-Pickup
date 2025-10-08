@@ -492,50 +492,73 @@
       `;
     }
 
+    function normalizeReportToText(value) {
+      if (value === null || value === undefined) {
+        return '';
+      }
+
+      if (typeof value === 'string') {
+        return value;
+      }
+
+      if (Array.isArray(value)) {
+        return value.map(normalizeReportToText).filter(Boolean).join('\n');
+      }
+
+      if (typeof value === 'object') {
+        const parts = Object.entries(value)
+          .map(([key, val]) => {
+            const normalized = normalizeReportToText(val).trim();
+            if (!normalized) {
+              return '';
+            }
+            return `${key}: ${normalized}`;
+          })
+          .filter(Boolean);
+
+        if (parts.length > 0) {
+          return parts.join('\n');
+        }
+
+        try {
+          return JSON.stringify(value, null, 2);
+        } catch (error) {
+          return String(value);
+        }
+      }
+
+      return String(value);
+    }
+
     function renderReportContent(content) {
-      if (content === null || content === undefined) {
+      const reportString = normalizeReportToText(content).trim();
+
+      if (!reportString) {
         return null;
       }
 
-      const normalizeToText = (value) => {
-        if (value === null || value === undefined) {
-          return '';
-        }
+      const isHtmlReport =
+        /^<!DOCTYPE html>/i.test(reportString) ||
+        /^<html[\s>]/i.test(reportString) ||
+        /<\/(p|div|section|ul|ol|li|h[1-6])>/i.test(reportString);
 
-        if (typeof value === 'string') {
-          return value;
-        }
+      if (isHtmlReport) {
+        let extractedHtml = reportString;
 
-        if (Array.isArray(value)) {
-          return value.map(normalizeToText).filter(Boolean).join('\n');
-        }
-
-        if (typeof value === 'object') {
-          const parts = Object.entries(value)
-            .map(([key, val]) => {
-              const normalized = normalizeToText(val).trim();
-              if (!normalized) {
-                return '';
-              }
-              return `${key}: ${normalized}`;
-            })
-            .filter(Boolean);
-
-          if (parts.length > 0) {
-            return parts.join('\n');
+        try {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(reportString, 'text/html');
+          if (doc && doc.body) {
+            extractedHtml = doc.body.innerHTML || reportString;
           }
-
-          try {
-            return JSON.stringify(value, null, 2);
-          } catch (error) {
-            return String(value);
-          }
+        } catch (_err) {
+          extractedHtml = reportString;
         }
 
-        return String(value);
-      };
+        return html`<div className="prose prose-sm max-w-none" dangerouslySetInnerHTML=${{ __html: extractedHtml }}></div>`;
+      }
 
-      const lines = normalizeToText(content)
+      const lines = reportString
         .split(/\r?\n/)
         .map((line) => line.trim())
         .filter(Boolean);
@@ -842,14 +865,6 @@
           return [String(value).replace(/^[*-•]\s*/, '').trim()].filter(Boolean);
         };
 
-        const normalizeConfidence = (value) => {
-          const numeric = Number(value);
-          if (!Number.isFinite(numeric)) {
-            return undefined;
-          }
-          return Math.max(0, Math.min(100, Math.round(numeric)));
-        };
-
         try {
           console.log('[Camera Analysis] Sending request to n8n...');
           const response = await fetch('/api/analyze-pile', {
@@ -878,8 +893,6 @@
             null;
 
           setAnalysisResult({
-            compliant: typeof rawResult.compliant === 'boolean' ? rawResult.compliant : null,
-            confidence: normalizeConfidence(rawResult.confidence),
             issues: normalizeList(rawResult.issues),
             suggestions: normalizeList(rawResult.suggestions),
             reportContent: reportContentSource,
@@ -1038,57 +1051,27 @@
           </div>
 
           ${analysisResult && (() => {
-            const compliance = analysisResult.compliant;
-            const isApproved = compliance === true;
-            const isRejected = compliance === false;
-            const cardTone = isApproved
-              ? 'bg-green-50 border-green-200'
-              : isRejected
-                ? 'bg-red-50 border-red-200'
-                : 'bg-yellow-50 border-yellow-200';
-            const headingTone = isApproved
-              ? 'text-green-800'
-              : isRejected
-                ? 'text-red-800'
-                : 'text-yellow-800';
-            const icon = isApproved ? '✅' : isRejected ? '❌' : 'ℹ️';
-            const headingText = isApproved
-              ? 'Ready for Pickup!'
-              : isRejected
-                ? 'Issues Found'
-                : 'Analysis Complete';
             const reportMarkup = renderReportContent(analysisResult.reportContent);
 
             return html`
-              <div className=${`p-6 rounded-lg border-2 ${cardTone}`}>
-                <div className="flex items-center mb-4">
-                  <div className="text-2xl mr-3">${icon}</div>
-                  <div>
-                    <h4 className=${`text-lg font-semibold ${headingTone}`}>
-                      ${headingText}
+              <div className="p-6 rounded-lg border-2 border-gray-200 bg-white">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <span className="text-2xl mr-3">📋</span>
+                    <h4 className="text-lg font-semibold text-gray-900">
+                      AI Analysis Report
                     </h4>
-                    ${analysisResult.confidence !== undefined && analysisResult.confidence !== null && html`
-                      <p className="text-sm text-gray-600">
-                        Confidence: ${analysisResult.confidence}%
-                      </p>
-                    `}
-                    ${analysisResult.analysisTimestamp && html`
-                      <p className="text-xs text-gray-500 mt-1">
-                        Completed: ${formatDate(analysisResult.analysisTimestamp)}
-                      </p>
-                    `}
                   </div>
+                  ${analysisResult.analysisTimestamp && html`
+                    <p className="text-xs text-gray-500">
+                      Completed: ${formatDate(analysisResult.analysisTimestamp)}
+                    </p>
+                  `}
                 </div>
 
                 ${reportMarkup ? html`
                   <div className="bg-white rounded-lg p-4 border border-gray-200">
-                    <h5 className="font-semibold text-gray-800 mb-3 flex items-center">
-                      <span className="mr-2">📋</span>
-                      AI Analysis Report
-                    </h5>
-                    <div className="prose prose-sm max-w-none">
-                      ${reportMarkup}
-                    </div>
+                    ${reportMarkup}
                   </div>
                 ` : html`
                   ${Array.isArray(analysisResult.issues) && analysisResult.issues.length > 0 && html`
@@ -1112,7 +1095,7 @@
                   ${(!Array.isArray(analysisResult.issues) || analysisResult.issues.length === 0) &&
                     (!Array.isArray(analysisResult.suggestions) || analysisResult.suggestions.length === 0) && html`
                       <p className="text-sm text-gray-600">
-                        No additional notes were provided with this analysis.
+                        The automation completed without additional notes. Please verify the pile visually.
                       </p>
                     `}
                 `}
