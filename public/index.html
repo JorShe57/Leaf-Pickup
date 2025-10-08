@@ -238,12 +238,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(
-        135deg,
-        rgba(26, 107, 46, 0.85) 0%,
-        rgba(25, 55, 95, 0.75) 50%,
-        rgba(26, 107, 46, 0.85) 100%
-      );
+      background: rgba(0, 0, 0, 0.1);
       z-index: 1;
     }
 
@@ -1168,119 +1163,51 @@
                 })}
               </ul>`;
 
-        const detailBody = selectedRecord
-          ? html`<div className="space-y-4">
-              <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-green-800">${selectedRecord.street}</h3>
-                  <${StatusBadge} status=${selectedRecord.status || 'Unknown'} />
-                </div>
-                <p className="text-sm text-green-700">Route ${selectedRecord.routeNumber || '--'}</p>
-              </div>
-              
-              <dl className="space-y-3">
-                <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                  <dt className="text-sm font-medium text-gray-600 flex items-center">
-                    <span className="mr-2">📅</span>
-                    Date Started
-                  </dt>
-                  <dd className="text-sm font-medium text-gray-900">
-                    ${formatDate(selectedRecord.dateStarted)}
-                  </dd>
-                </div>
-                <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                  <dt className="text-sm font-medium text-gray-600 flex items-center">
-                    <span className="mr-2">✅</span>
-                    Date Completed
-                  </dt>
-                  <dd className="text-sm font-medium text-gray-900">
-                    ${formatDate(selectedRecord.dateCompleted)}
-                  </dd>
-                </div>
-                
-                ${selectedRecord.notes && selectedRecord.notes.trim() && html`
-                  <div className="py-2">
-                    <dt className="text-sm font-medium text-gray-600 flex items-center mb-2">
-                      <span className="mr-2">📝</span>
-                      Notes
-                    </dt>
-                    <dd className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg border">
-                      ${selectedRecord.notes}
-                    </dd>
-                  </div>
-                `}
-              </dl>
-            </div>`
-          : filteredRecords.length === 0
-          ? html`<div className="text-center py-8">
-              <div className="text-4xl mb-3">🏠</div>
-              <p className="text-sm text-gray-500">
-                Start typing to find your street and see its pickup details.
-              </p>
-            </div>`
-          : html`<div className="text-center py-8">
-              <div className="text-4xl mb-3">📍</div>
-              <p className="text-sm text-gray-500">
-                Select a street from the list to view its route and collection dates.
-              </p>
-            </div>`;
 
-        mainContent = html`<div className="mt-8 grid gap-6 grid-cols-1 lg:grid-cols-[2fr,3fr] mobile-stack">
-          <section aria-label="Street results" className="space-y-4">
-            <div className="flex items-center justify-between">
+        mainContent = html`<div className="mt-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="text-sm font-medium text-gray-600">
+                ${filteredRecords.length} ${filteredRecords.length === 1 ? 'result' : 'results'}
+              </span>
+              ${filteredRecords.length > 0 ? html`<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                ${filteredRecords.filter(r => r.status === 'Completed').length} completed
+              </span>` : null}
+            </div>
+            <div className="flex items-center space-x-3">
               <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-600">
-                  ${filteredRecords.length} ${filteredRecords.length === 1 ? 'result' : 'results'}
-                </span>
-                ${filteredRecords.length > 0 ? html`<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  ${filteredRecords.filter(r => r.status === 'Completed').length} completed
-                </span>` : null}
+                <label htmlFor="sort-select" className="text-sm font-medium text-gray-600 flex items-center">
+                  <span className="mr-1">🔀</span>
+                  Sort by:
+                </label>
+                <select
+                  id="sort-select"
+                  value=${sortBy}
+                  onChange=${(e) => setSortBy(e.target.value)}
+                  className="text-sm border border-gray-300 rounded-md px-3 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
+                >
+                  <option value="street">Street Name</option>
+                  <option value="status">Status</option>
+                  <option value="route">Route Number</option>
+                </select>
               </div>
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2">
-                  <label htmlFor="sort-select" className="text-sm font-medium text-gray-600 flex items-center">
-                    <span className="mr-1">🔀</span>
-                    Sort by:
-                  </label>
-                  <select
-                    id="sort-select"
-                    value=${sortBy}
-                    onChange=${(e) => setSortBy(e.target.value)}
-                    className="text-sm border border-gray-300 rounded-md px-3 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 hover:border-green-400 transition-colors"
+              ${searchTerm
+                ? html`<button
+                    type="button"
+                    onClick=${() => {
+                      setSearchTerm('');
+                      setActiveId(null);
+                    }}
+                    className="text-sm text-green-600 hover:text-green-700 font-medium"
                   >
-                    <option value="street">Street Name</option>
-                    <option value="status">Status</option>
-                    <option value="route">Route Number</option>
-                  </select>
-                </div>
-                ${searchTerm
-                  ? html`<button
-                      type="button"
-                      onClick=${() => {
-                        setSearchTerm('');
-                        setActiveId(null);
-                      }}
-                      className="text-sm text-green-600 hover:text-green-700 font-medium"
-                    >
-                      Clear search
-                    </button>`
-                  : null}
-              </div>
+                    Clear search
+                  </button>`
+                : null}
             </div>
-            <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white/90 backdrop-blur-sm shadow-sm scroll-container">
-              ${resultsList}
-            </div>
-          </section>
-
-          <section aria-live="polite" aria-label="Street details" className="space-y-4">
-            <div className="rounded-lg border border-gray-200 bg-white/90 backdrop-blur-sm p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <span className="mr-2">📋</span>
-                Collection Details
-              </h2>
-              ${detailBody}
-            </div>
-          </section>
+          </div>
+          <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white/90 backdrop-blur-sm shadow-sm scroll-container">
+            ${resultsList}
+          </div>
         </div>`;
       }
 
