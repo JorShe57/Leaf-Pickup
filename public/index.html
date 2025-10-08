@@ -419,16 +419,6 @@
       </div>`;
     }
 
-    function ProgressBar({ progress, label }) {
-      return html`<div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-        <div 
-          className="bg-green-600 h-2 rounded-full transition-all duration-300 ease-out"
-          style=${{ width: `${progress}%` }}
-        ></div>
-      </div>
-      <p className="text-sm text-gray-600 text-center">${label}</p>`;
-    }
-
     function RouteModal({ record, isOpen, onClose }) {
       if (!isOpen || !record) return null;
 
@@ -502,181 +492,94 @@
       `;
     }
 
-    function formatReportContent(content) {
-      const humanizeKey = (value) => {
-        if (value === null || value === undefined) {
-          return '';
-        }
+    function renderReportContent(content) {
+      if (content === null || content === undefined) {
+        return null;
+      }
 
-        const str = String(value);
-        const spaced = str
-          .replace(/[_-]+/g, ' ')
-          .replace(/([a-z\\d])([A-Z])/g, '$1 $2')
-          .replace(/\s+/g, ' ')
-          .trim();
-
-        if (!spaced) {
-          return str;
-        }
-
-        return spaced.charAt(0).toUpperCase() + spaced.slice(1);
-      };
-
-      const normalize = (value, depth = 0) => {
-        const MAX_DEPTH = 4;
-
+      const normalizeToText = (value) => {
         if (value === null || value === undefined) {
           return '';
         }
 
         if (typeof value === 'string') {
-          return value.trim();
-        }
-
-        if (depth >= MAX_DEPTH) {
-          return String(value);
+          return value;
         }
 
         if (Array.isArray(value)) {
-          const indent = '  '.repeat(depth);
-          const nestedIndent = '  '.repeat(depth + 1);
-
-          return value
-            .map((item) => {
-              const normalizedItem = normalize(item, depth + 1);
-              if (!normalizedItem) {
-                return '';
-              }
-
-              const prepared = normalizedItem
-                .split('\n')
-                .map((line, index) => (index === 0 ? line : `${nestedIndent}${line}`))
-                .join('\n');
-
-              return `${indent}- ${prepared}`;
-            })
-            .filter(Boolean)
-            .join('\n');
+          return value.map(normalizeToText).filter(Boolean).join('\n');
         }
 
         if (typeof value === 'object') {
-          if (typeof value.markdown === 'string') {
-            return value.markdown.trim();
-          }
-
-          if (typeof value.text === 'string') {
-            return value.text.trim();
-          }
-
-          if (typeof value.html === 'string') {
-            return value.html.trim();
-          }
-
-          if (Array.isArray(value.sections)) {
-            return value.sections
-              .map((section) => {
-                const title =
-                  section && typeof section.title === 'string'
-                    ? section.title.trim()
-                    : '';
-
-                let bodySource = '';
-                if (section) {
-                  if (section.content !== undefined && section.content !== null) {
-                    bodySource = section.content;
-                  } else if (section.body !== undefined && section.body !== null) {
-                    bodySource = section.body;
-                  } else if (section.items !== undefined && section.items !== null) {
-                    bodySource = section.items;
-                  } else if (section.details !== undefined && section.details !== null) {
-                    bodySource = section.details;
-                  }
-                }
-
-                const body = normalize(bodySource, depth + 1);
-
-                if (!title && !body) {
-                  return '';
-                }
-
-                const heading = title ? `${'#'.repeat(Math.min(depth + 2, 6))} ${title}` : '';
-
-                return [heading, body].filter(Boolean).join('\n').trim();
-              })
-              .filter(Boolean)
-              .join('\n\n');
-          }
-
-          const entries = Object.entries(value)
+          const parts = Object.entries(value)
             .map(([key, val]) => {
-              const normalizedValue = normalize(val, depth + 1);
-              if (!normalizedValue) {
+              const normalized = normalizeToText(val).trim();
+              if (!normalized) {
                 return '';
               }
-
-              const headingLevel = Math.min(depth + 2, 6);
-              return `${'#'.repeat(headingLevel)} ${humanizeKey(key)}\n${normalizedValue}`;
+              return `${key}: ${normalized}`;
             })
             .filter(Boolean);
 
-          if (entries.length) {
-            return entries.join('\n\n');
+          if (parts.length > 0) {
+            return parts.join('\n');
+          }
+
+          try {
+            return JSON.stringify(value, null, 2);
+          } catch (error) {
+            return String(value);
           }
         }
 
         return String(value);
       };
 
-      const escapeHtml = (value) =>
-        value
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
+      const lines = normalizeToText(content)
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
 
-      const markdownSource = normalize(content);
-      if (!markdownSource) {
-        return '';
+      if (lines.length === 0) {
+        return null;
       }
 
-      const escaped = escapeHtml(markdownSource);
+      const groups = [];
+      lines.forEach((line) => {
+        const isBullet = /^[-*•]/.test(line);
+        const text = line.replace(/^[-*•]\s*/, '').trim();
+        if (!text) {
+          return;
+        }
 
-      let formatted = escaped
-        // Convert headers
-        .replace(/^###### (.*)$/gim, '<h6 class="text-sm font-semibold text-gray-700 mt-3 mb-2">$1</h6>')
-        .replace(/^##### (.*)$/gim, '<h5 class="text-base font-semibold text-gray-700 mt-3 mb-2">$1</h5>')
-        .replace(/^#### (.*)$/gim, '<h4 class="text-base font-semibold text-gray-800 mt-4 mb-2">$1</h4>')
-        .replace(/^### (.*)$/gim, '<h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">$1</h3>')
-        .replace(/^## (.*)$/gim, '<h2 class="text-xl font-bold text-gray-900 mt-6 mb-3">$1</h2>')
-        .replace(/^# (.*)$/gim, '<h1 class="text-2xl font-bold text-gray-900 mt-6 mb-4">$1</h1>')
-        // Emphasis styles
-        .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-800">$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em class="italic text-gray-700">$1</em>')
-        // Horizontal rules
-        .replace(/^---$/gim, '<hr class="my-4 border-gray-300">')
-        // Status indicators
-        .replace(/✅/g, '<span class="text-green-600 font-bold">✅</span>')
-        .replace(/❌/g, '<span class="text-red-600 font-bold">❌</span>')
-        .replace(/⛔/g, '<span class="text-orange-600 font-bold">⛔</span>')
-        // Bullet points
-        .replace(/^( *)(?:[-*])\s+(.*)$/gim, (match, spaces, item) => {
-          const indentClass = spaces.length >= 2 ? 'ml-8' : 'ml-4';
-          const text = item.trim();
-          if (!text) {
-            return '';
+        const lastGroup = groups[groups.length - 1];
+
+        if (isBullet) {
+          if (lastGroup && lastGroup.type === 'list') {
+            lastGroup.items.push(text);
+          } else {
+            groups.push({ type: 'list', items: [text] });
           }
-          return `<li class="${indentClass} mb-1">• ${text}</li>`;
-        });
-
-      formatted = formatted
-        .replace(/\n{2,}/g, '\n\n')
-        .replace(/\n/g, '<br>');
-
-      formatted = formatted.replace(/(?:<br>)?(<li[^>]*>.*?<\/li>(?:<br>)*)+/gim, (match) => {
-        const cleaned = match.replace(/<br>/g, '');
-        return `<ul class="list-none space-y-1">${cleaned}</ul>`;
+        } else {
+          if (lastGroup && lastGroup.type === 'text') {
+            lastGroup.text = `${lastGroup.text} ${text}`.trim();
+          } else {
+            groups.push({ type: 'text', text });
+          }
+        }
       });
 
-      return html`<div dangerouslySetInnerHTML=${{ __html: formatted }}></div>`;
+      return html`<div className="space-y-3 text-sm text-gray-700 leading-relaxed">
+        ${groups.map((group, index) => {
+          if (group.type === 'list') {
+            return html`<ul key=${`list-${index}`} className="list-disc list-inside space-y-1 text-gray-700">
+              ${group.items.map((item, itemIndex) => html`<li key=${`item-${index}-${itemIndex}`}>${item}</li>`)}
+            </ul>`;
+          }
+
+          return html`<p key=${`text-${index}`}>${group.text}</p>`;
+        })}
+      </div>`;
     }
 
     function formatDate(value) {
@@ -788,8 +691,6 @@
       const [isProcessingImage, setIsProcessingImage] = useState(false);
       const [payloadImage, setPayloadImage] = useState(null);
       const [uploadMeta, setUploadMeta] = useState(null);
-      const [analysisProgress, setAnalysisProgress] = useState(0);
-      const [progressLabel, setProgressLabel] = useState('');
       const fileInputRef = React.useRef(null);
 
       const complianceGuidelines = [
@@ -903,26 +804,51 @@
         setIsSubmitting(true);
         setError(null);
         setAnalysisResult(null);
-        setAnalysisProgress(0);
-        setProgressLabel('Preparing analysis...');
 
-        // Simulate progress updates
-        const progressInterval = setInterval(() => {
-          setAnalysisProgress(prev => {
-            if (prev < 90) {
-              const newProgress = prev + Math.random() * 15;
-              if (newProgress < 30) {
-                setProgressLabel('Sending image to AI...');
-              } else if (newProgress < 60) {
-                setProgressLabel('AI analyzing your pile...');
-              } else if (newProgress < 90) {
-                setProgressLabel('Generating compliance report...');
-              }
-              return Math.min(newProgress, 90);
-            }
-            return prev;
-          });
-        }, 500);
+        const normalizeList = (value) => {
+          if (!value && value !== 0) {
+            return [];
+          }
+
+          if (Array.isArray(value)) {
+            return value
+              .map((item) => {
+                if (!item && item !== 0) {
+                  return '';
+                }
+                if (typeof item === 'string') {
+                  return item.replace(/^[*-•]\s*/, '').trim();
+                }
+                if (item && typeof item === 'object') {
+                  if (typeof item.message === 'string') {
+                    return item.message.replace(/^[*-•]\s*/, '').trim();
+                  }
+                  if (typeof item.text === 'string') {
+                    return item.text.replace(/^[*-•]\s*/, '').trim();
+                  }
+                }
+                return String(item).replace(/^[*-•]\s*/, '').trim();
+              })
+              .filter(Boolean);
+          }
+
+          if (typeof value === 'string') {
+            return value
+              .split(/\n+/)
+              .map((line) => line.replace(/^[*-•]\s*/, '').trim())
+              .filter(Boolean);
+          }
+
+          return [String(value).replace(/^[*-•]\s*/, '').trim()].filter(Boolean);
+        };
+
+        const normalizeConfidence = (value) => {
+          const numeric = Number(value);
+          if (!Number.isFinite(numeric)) {
+            return undefined;
+          }
+          return Math.max(0, Math.min(100, Math.round(numeric)));
+        };
 
         try {
           console.log('[Camera Analysis] Sending request to n8n...');
@@ -934,7 +860,7 @@
               filename: selectedFile ? selectedFile.name : 'leaf-pile.jpg',
             }),
           });
-          
+
           console.log('[Camera Analysis] Response received:', response.status);
 
           if (!response.ok) {
@@ -943,27 +869,31 @@
             throw error;
           }
 
-          const result = await response.json();
-          
-          // Complete progress
-          clearInterval(progressInterval);
-          setAnalysisProgress(100);
-          setProgressLabel('Analysis complete!');
-          
-          // Small delay to show completion
-          setTimeout(() => {
-            setAnalysisResult(result);
-            setIsSubmitting(false);
-          }, 500);
-          
+          const rawResult = await response.json();
+          const reportContentSource =
+            rawResult.reportContent ??
+            rawResult.report ??
+            rawResult.message ??
+            rawResult.content ??
+            null;
+
+          setAnalysisResult({
+            compliant: typeof rawResult.compliant === 'boolean' ? rawResult.compliant : null,
+            confidence: normalizeConfidence(rawResult.confidence),
+            issues: normalizeList(rawResult.issues),
+            suggestions: normalizeList(rawResult.suggestions),
+            reportContent: reportContentSource,
+            analysisTimestamp: rawResult.analysisTimestamp || new Date().toISOString(),
+            raw: rawResult,
+          });
         } catch (err) {
-          clearInterval(progressInterval);
           console.error('Analysis request failed:', err);
           if (err && err.status === 413) {
             setError('The photo was too large to send to the analyzer. Try retaking it from a little farther back or using a lower-resolution photo.');
           } else {
             setError('We could not reach the analysis service. Please try again in a moment.');
           }
+        } finally {
           setIsSubmitting(false);
         }
       };
@@ -975,6 +905,7 @@
         setError(null);
         setPayloadImage(null);
         setUploadMeta(null);
+        setIsSubmitting(false);
         if (fileInputRef.current) {
           fileInputRef.current.value = null;
         }
@@ -1089,80 +1020,105 @@
               ${isProcessingImage
                 ? 'Optimizing photo...'
                 : isSubmitting
-                  ? 'Submitting to n8n...'
+                  ? 'Sending for analysis...'
                   : 'Send to Analysis'}
             </button>
             
             ${isSubmitting && html`
               <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center mb-3">
+                <div className="flex items-center">
                   <div className="loading-spinner mr-3"></div>
-                  <span className="text-sm font-medium text-blue-800">AI Analysis in Progress</span>
+                  <div>
+                    <p className="text-sm font-medium text-blue-800">AI analysis in progress...</p>
+                    <p className="text-xs text-blue-700 mt-1">Hang tight—this usually takes under 10 seconds.</p>
+                  </div>
                 </div>
-                <${ProgressBar} progress=${analysisProgress} label=${progressLabel} />
               </div>
             `}
           </div>
 
-          ${analysisResult && html`
-            <div className=${`p-6 rounded-lg border-2 ${
-              analysisResult.compliant 
-                ? 'bg-green-50 border-green-200' 
-                : 'bg-red-50 border-red-200'
-            }`}>
-              <div className="flex items-center mb-4">
-                <div className="text-2xl mr-3">
-                  ${analysisResult.compliant ? '✅' : '❌'}
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold ${
-                    analysisResult.compliant ? 'text-green-800' : 'text-red-800'
-                  }">
-                    ${analysisResult.compliant ? 'Ready for Pickup!' : 'Issues Found'}
-                  </h4>
-                  ${analysisResult.confidence !== undefined && html`
-                    <p className="text-sm text-gray-600">
-                      Confidence: ${analysisResult.confidence}%
-                    </p>
-                  `}
-                </div>
-              </div>
+          ${analysisResult && (() => {
+            const compliance = analysisResult.compliant;
+            const isApproved = compliance === true;
+            const isRejected = compliance === false;
+            const cardTone = isApproved
+              ? 'bg-green-50 border-green-200'
+              : isRejected
+                ? 'bg-red-50 border-red-200'
+                : 'bg-yellow-50 border-yellow-200';
+            const headingTone = isApproved
+              ? 'text-green-800'
+              : isRejected
+                ? 'text-red-800'
+                : 'text-yellow-800';
+            const icon = isApproved ? '✅' : isRejected ? '❌' : 'ℹ️';
+            const headingText = isApproved
+              ? 'Ready for Pickup!'
+              : isRejected
+                ? 'Issues Found'
+                : 'Analysis Complete';
+            const reportMarkup = renderReportContent(analysisResult.reportContent);
 
-              ${analysisResult.reportContent ? html`
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                  <h5 className="font-semibold text-gray-800 mb-3 flex items-center">
-                    <span className="mr-2">📋</span>
-                    AI Analysis Report
-                  </h5>
-                  <div className="prose prose-sm max-w-none">
-                    ${formatReportContent(analysisResult.reportContent)}
-                  </div>
-                </div>
-              ` : html`
-                ${Array.isArray(analysisResult.issues) && analysisResult.issues.length > 0 && html`
-                  <div className="mb-4">
-                    <h5 className="font-medium text-red-700 mb-2">Issues Found:</h5>
-                    <ul className="text-sm text-red-600 space-y-1">
-                      ${analysisResult.issues.map(issue => html`
-                        <li key=${issue}>• ${issue}</li>
-                      `)}
-                    </ul>
-                  </div>
-                `}
-
-                ${Array.isArray(analysisResult.suggestions) && analysisResult.suggestions.length > 0 && html`
+            return html`
+              <div className=${`p-6 rounded-lg border-2 ${cardTone}`}>
+                <div className="flex items-center mb-4">
+                  <div className="text-2xl mr-3">${icon}</div>
                   <div>
-                    <h5 className="font-medium text-gray-700 mb-2">Suggestions:</h5>
-                    <ul className="text-sm text-gray-600 space-y-1">
-                      ${analysisResult.suggestions.map(suggestion => html`
-                        <li key=${suggestion}>• ${suggestion}</li>
-                      `)}
-                    </ul>
+                    <h4 className=${`text-lg font-semibold ${headingTone}`}>
+                      ${headingText}
+                    </h4>
+                    ${analysisResult.confidence !== undefined && analysisResult.confidence !== null && html`
+                      <p className="text-sm text-gray-600">
+                        Confidence: ${analysisResult.confidence}%
+                      </p>
+                    `}
+                    ${analysisResult.analysisTimestamp && html`
+                      <p className="text-xs text-gray-500 mt-1">
+                        Completed: ${formatDate(analysisResult.analysisTimestamp)}
+                      </p>
+                    `}
                   </div>
+                </div>
+
+                ${reportMarkup ? html`
+                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                    <h5 className="font-semibold text-gray-800 mb-3 flex items-center">
+                      <span className="mr-2">📋</span>
+                      AI Analysis Report
+                    </h5>
+                    <div className="prose prose-sm max-w-none">
+                      ${reportMarkup}
+                    </div>
+                  </div>
+                ` : html`
+                  ${Array.isArray(analysisResult.issues) && analysisResult.issues.length > 0 && html`
+                    <div className="mb-4">
+                      <h5 className="text-sm font-medium text-red-700 mb-2">Issues Found:</h5>
+                      <ul className="text-sm text-red-600 space-y-1">
+                        ${analysisResult.issues.map((issue) => html`<li key=${issue}>• ${issue}</li>`)}
+                      </ul>
+                    </div>
+                  `}
+
+                  ${Array.isArray(analysisResult.suggestions) && analysisResult.suggestions.length > 0 && html`
+                    <div>
+                      <h5 className="text-sm font-medium text-gray-700 mb-2">Suggestions:</h5>
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        ${analysisResult.suggestions.map((suggestion) => html`<li key=${suggestion}>• ${suggestion}</li>`)}
+                      </ul>
+                    </div>
+                  `}
+
+                  ${(!Array.isArray(analysisResult.issues) || analysisResult.issues.length === 0) &&
+                    (!Array.isArray(analysisResult.suggestions) || analysisResult.suggestions.length === 0) && html`
+                      <p className="text-sm text-gray-600">
+                        No additional notes were provided with this analysis.
+                      </p>
+                    `}
                 `}
-              `}
-            </div>
-          `}
+              </div>
+            `;
+          })()}
         </div>
       `;
     }
