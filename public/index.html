@@ -503,37 +503,180 @@
     }
 
     function formatReportContent(content) {
-      if (!content) return '';
-      
-      // Convert markdown-like formatting to HTML
-      let formatted = content
+      const humanizeKey = (value) => {
+        if (value === null || value === undefined) {
+          return '';
+        }
+
+        const str = String(value);
+        const spaced = str
+          .replace(/[_-]+/g, ' ')
+          .replace(/([a-z\\d])([A-Z])/g, '$1 $2')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        if (!spaced) {
+          return str;
+        }
+
+        return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+      };
+
+      const normalize = (value, depth = 0) => {
+        const MAX_DEPTH = 4;
+
+        if (value === null || value === undefined) {
+          return '';
+        }
+
+        if (typeof value === 'string') {
+          return value.trim();
+        }
+
+        if (depth >= MAX_DEPTH) {
+          return String(value);
+        }
+
+        if (Array.isArray(value)) {
+          const indent = '  '.repeat(depth);
+          const nestedIndent = '  '.repeat(depth + 1);
+
+          return value
+            .map((item) => {
+              const normalizedItem = normalize(item, depth + 1);
+              if (!normalizedItem) {
+                return '';
+              }
+
+              const prepared = normalizedItem
+                .split('\n')
+                .map((line, index) => (index === 0 ? line : `${nestedIndent}${line}`))
+                .join('\n');
+
+              return `${indent}- ${prepared}`;
+            })
+            .filter(Boolean)
+            .join('\n');
+        }
+
+        if (typeof value === 'object') {
+          if (typeof value.markdown === 'string') {
+            return value.markdown.trim();
+          }
+
+          if (typeof value.text === 'string') {
+            return value.text.trim();
+          }
+
+          if (typeof value.html === 'string') {
+            return value.html.trim();
+          }
+
+          if (Array.isArray(value.sections)) {
+            return value.sections
+              .map((section) => {
+                const title =
+                  section && typeof section.title === 'string'
+                    ? section.title.trim()
+                    : '';
+
+                let bodySource = '';
+                if (section) {
+                  if (section.content !== undefined && section.content !== null) {
+                    bodySource = section.content;
+                  } else if (section.body !== undefined && section.body !== null) {
+                    bodySource = section.body;
+                  } else if (section.items !== undefined && section.items !== null) {
+                    bodySource = section.items;
+                  } else if (section.details !== undefined && section.details !== null) {
+                    bodySource = section.details;
+                  }
+                }
+
+                const body = normalize(bodySource, depth + 1);
+
+                if (!title && !body) {
+                  return '';
+                }
+
+                const heading = title ? `${'#'.repeat(Math.min(depth + 2, 6))} ${title}` : '';
+
+                return [heading, body].filter(Boolean).join('\n').trim();
+              })
+              .filter(Boolean)
+              .join('\n\n');
+          }
+
+          const entries = Object.entries(value)
+            .map(([key, val]) => {
+              const normalizedValue = normalize(val, depth + 1);
+              if (!normalizedValue) {
+                return '';
+              }
+
+              const headingLevel = Math.min(depth + 2, 6);
+              return `${'#'.repeat(headingLevel)} ${humanizeKey(key)}\n${normalizedValue}`;
+            })
+            .filter(Boolean);
+
+          if (entries.length) {
+            return entries.join('\n\n');
+          }
+        }
+
+        return String(value);
+      };
+
+      const escapeHtml = (value) =>
+        value
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+
+      const markdownSource = normalize(content);
+      if (!markdownSource) {
+        return '';
+      }
+
+      const escaped = escapeHtml(markdownSource);
+
+      let formatted = escaped
         // Convert headers
-        .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">$1</h3>')
-        .replace(/^## (.*$)/gim, '<h2 class="text-xl font-bold text-gray-900 mt-6 mb-3">$1</h2>')
-        .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold text-gray-900 mt-6 mb-4">$1</h1>')
-        
-        // Convert bold text
+        .replace(/^###### (.*)$/gim, '<h6 class="text-sm font-semibold text-gray-700 mt-3 mb-2">$1</h6>')
+        .replace(/^##### (.*)$/gim, '<h5 class="text-base font-semibold text-gray-700 mt-3 mb-2">$1</h5>')
+        .replace(/^#### (.*)$/gim, '<h4 class="text-base font-semibold text-gray-800 mt-4 mb-2">$1</h4>')
+        .replace(/^### (.*)$/gim, '<h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">$1</h3>')
+        .replace(/^## (.*)$/gim, '<h2 class="text-xl font-bold text-gray-900 mt-6 mb-3">$1</h2>')
+        .replace(/^# (.*)$/gim, '<h1 class="text-2xl font-bold text-gray-900 mt-6 mb-4">$1</h1>')
+        // Emphasis styles
         .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-800">$1</strong>')
-        
-        // Convert bullet points
-        .replace(/^- (.*$)/gim, '<li class="ml-4 mb-1">• $1</li>')
-        .replace(/^  - (.*$)/gim, '<li class="ml-8 mb-1">• $1</li>')
-        
-        // Convert status indicators
+        .replace(/\*(.*?)\*/g, '<em class="italic text-gray-700">$1</em>')
+        // Horizontal rules
+        .replace(/^---$/gim, '<hr class="my-4 border-gray-300">')
+        // Status indicators
         .replace(/✅/g, '<span class="text-green-600 font-bold">✅</span>')
         .replace(/❌/g, '<span class="text-red-600 font-bold">❌</span>')
         .replace(/⛔/g, '<span class="text-orange-600 font-bold">⛔</span>')
-        
-        // Convert horizontal rules
-        .replace(/^---$/gim, '<hr class="my-4 border-gray-300">')
-        
-        // Convert line breaks
+        // Bullet points
+        .replace(/^( *)(?:[-*])\s+(.*)$/gim, (match, spaces, item) => {
+          const indentClass = spaces.length >= 2 ? 'ml-8' : 'ml-4';
+          const text = item.trim();
+          if (!text) {
+            return '';
+          }
+          return `<li class="${indentClass} mb-1">• ${text}</li>`;
+        });
+
+      formatted = formatted
+        .replace(/\n{2,}/g, '\n\n')
         .replace(/\n/g, '<br>');
-      
-      // Wrap lists in ul tags
-      formatted = formatted.replace(/(<li.*<\/li>)/g, '<ul class="list-none space-y-1">$1</ul>');
-      
-      return html`<div dangerouslySetInnerHTML=${{__html: formatted}}></div>`;
+
+      formatted = formatted.replace(/(?:<br>)?(<li[^>]*>.*?<\/li>(?:<br>)*)+/gim, (match) => {
+        const cleaned = match.replace(/<br>/g, '');
+        return `<ul class="list-none space-y-1">${cleaned}</ul>`;
+      });
+
+      return html`<div dangerouslySetInnerHTML=${{ __html: formatted }}></div>`;
     }
 
     function formatDate(value) {

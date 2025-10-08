@@ -151,26 +151,42 @@ export default async function handler(req, res) {
 
 function formatN8NReport(n8nResponse) {
   const timestamp = new Date().toISOString();
-  
+
   try {
-    // Handle array response format from N8N
-    const responseData = Array.isArray(n8nResponse) ? n8nResponse[0] : n8nResponse;
-    const content = responseData.content || responseData.message || '';
-    
-    // Determine compliance status from content
-    const isApproved = content.includes('✅ **APPROVED**') || content.includes('**APPROVED**');
-    const needsCorrection = content.includes('❌ **NEEDS CORRECTION**') || content.includes('**NEEDS CORRECTION**');
-    
+    const responseDataRaw = Array.isArray(n8nResponse)
+      ? n8nResponse.find((entry) => entry && typeof entry === 'object' && !Array.isArray(entry)) ?? n8nResponse[0]
+      : n8nResponse;
+
+    const responseData = responseDataRaw && typeof responseDataRaw === 'object' ? responseDataRaw : {};
+    const contentSource =
+      responseData.report ??
+      responseData.content ??
+      responseData.message ??
+      responseData.analysis ??
+      responseData.data ??
+      null;
+
+    const reportContentRaw = normalizeReportContent(contentSource ?? responseData);
+    const reportContent = reportContentRaw || 'Analysis completed, but no detailed report was provided.';
+
+    const complianceFromPayload =
+      typeof responseData.compliant === 'boolean' ? responseData.compliant : null;
+    const inferredCompliance = inferComplianceFromContent(reportContent);
+    const compliant = complianceFromPayload !== null ? complianceFromPayload : inferredCompliance;
+
+    const confidence = normalizeConfidence(responseData.confidence);
+    const issues = normalizeStringArray(responseData.issues);
+    const suggestions = normalizeStringArray(responseData.suggestions);
+
     return {
-      compliant: isApproved && !needsCorrection,
-      confidence: 85, // Default confidence for AI analysis
-      issues: [], // Will be displayed in the report content
-      suggestions: [], // Will be displayed in the report content
+      compliant,
+      confidence,
+      issues,
+      suggestions,
       analysisTimestamp: timestamp,
-      reportContent: content, // Full AI analysis content
+      reportContent,
       analysisMethod: 'n8n-openai-analysis'
     };
-    
   } catch (error) {
     console.error('Error formatting N8N report:', error);
     return {
@@ -183,4 +199,197 @@ function formatN8NReport(n8nResponse) {
       analysisMethod: 'n8n-openai-analysis-error'
     };
   }
+}
+
+function normalizeConfidence(value) {
+  const numeric = Number(value);
+  if (Number.isFinite(numeric)) {
+    return Math.max(0, Math.min(100, Math.round(numeric)));
+  }
+  return 85;
+}
+
+function normalizeStringArray(value) {
+  if (!value && value !== 0) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => {
+        if (!item && item !== 0) {
+          return '';
+        }
+        if (typeof item === 'string') {
+          return item.trim();
+        }
+        if (item && typeof item === 'object') {
+          if (typeof item.message === 'string') {
+            return item.message.trim();
+          }
+          if (typeof item.text === 'string') {
+            return item.text.trim();
+          }
+        }
+        return String(item).trim();
+      })
+      .map((text) => text.replace(/^[*-]\s*/, ''))
+      .filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(/\n+/)
+      .map((line) => line.trim())
+      .map((line) => line.replace(/^[*-]\s*/, ''))
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function inferComplianceFromContent(content) {
+  if (typeof content !== 'string' || !content.trim()) {
+    return false;
+  }
+
+  const lowered = content.toLowerCase();
+
+  const hasApproveIndicator =
+    lowered.includes('✅') ||
+    lowered.includes('approved') ||
+    lowered.includes('ready for pickup');
+
+  const hasRejectionIndicator =
+    lowered.includes('❌') ||
+    lowered.includes('needs correction') ||
+    lowered.includes('issue') ||
+    lowered.includes('not compliant');
+
+  if (hasApproveIndicator && !hasRejectionIndicator) {
+    return true;
+  }
+
+  if (hasRejectionIndicator && !hasApproveIndicator) {
+    return false;
+  }
+
+  return hasApproveIndicator;
+}
+
+function normalizeReportContent(value, depth = 0) {
+  const MAX_DEPTH = 4;
+
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+
+  if (depth >= MAX_DEPTH) {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    const indent = '  '.repeat(depth);
+    const nestedIndent = '  '.repeat(depth + 1);
+
+    return value
+      .map((item) => {
+        const normalized = normalizeReportContent(item, depth + 1);
+        if (!normalized) {
+          return '';
+        }
+
+        const prepared = normalized
+          .split('\n')
+          .map((line, index) => (index === 0 ? line : `${nestedIndent}${line}`))
+          .join('\n');
+
+        return `${indent}- ${prepared}`;
+      })
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  if (typeof value === 'object') {
+    if (typeof value.markdown === 'string') {
+      return value.markdown.trim();
+    }
+
+    if (typeof value.text === 'string') {
+      return value.text.trim();
+    }
+
+    if (typeof value.html === 'string') {
+      return value.html.trim();
+    }
+
+    if (Array.isArray(value.sections)) {
+      return value.sections
+        .map((section) => {
+          const title =
+            section && typeof section.title === 'string'
+              ? section.title.trim()
+              : '';
+
+          const bodySource =
+            section && (section.content ?? section.body ?? section.items ?? section.details);
+
+          const body = normalizeReportContent(bodySource, depth + 1);
+
+          if (!title && !body) {
+            return '';
+          }
+
+          const heading =
+            title ? `${'#'.repeat(Math.min(depth + 2, 6))} ${title}` : '';
+
+          return [heading, body].filter(Boolean).join('\n').trim();
+        })
+        .filter(Boolean)
+        .join('\n\n');
+    }
+
+    const entries = Object.entries(value)
+      .map(([key, val]) => {
+        const normalized = normalizeReportContent(val, depth + 1);
+        if (!normalized) {
+          return '';
+        }
+
+        const headingLevel = Math.min(depth + 2, 6);
+        const heading = `${'#'.repeat(headingLevel)} ${humanizeKey(key)}`;
+
+        return `${heading}\n${normalized}`;
+      })
+      .filter(Boolean);
+
+    if (entries.length) {
+      return entries.join('\n\n');
+    }
+  }
+
+  return String(value);
+}
+
+function humanizeKey(value) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  const str = String(value);
+  const spaced = str
+    .replace(/[_-]+/g, ' ')
+    .replace(/([a-z\d])([A-Z])/g, '$1 $2')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!spaced) {
+    return str;
+  }
+
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
