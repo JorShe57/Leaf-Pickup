@@ -235,6 +235,16 @@
       </div>`;
     }
 
+    function ProgressBar({ progress, label }) {
+      return html`<div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+        <div 
+          className="bg-green-600 h-2 rounded-full transition-all duration-300 ease-out"
+          style="width: ${progress}%"
+        ></div>
+      </div>
+      <p className="text-sm text-gray-600 text-center">${label}</p>`;
+    }
+
     function formatReportContent(content) {
       if (!content) return '';
       
@@ -294,6 +304,8 @@
       const [isProcessingImage, setIsProcessingImage] = useState(false);
       const [payloadImage, setPayloadImage] = useState(null);
       const [uploadMeta, setUploadMeta] = useState(null);
+      const [analysisProgress, setAnalysisProgress] = useState(0);
+      const [progressLabel, setProgressLabel] = useState('');
       const fileInputRef = React.useRef(null);
 
       const complianceGuidelines = [
@@ -407,6 +419,26 @@
         setIsSubmitting(true);
         setError(null);
         setAnalysisResult(null);
+        setAnalysisProgress(0);
+        setProgressLabel('Preparing analysis...');
+
+        // Simulate progress updates
+        const progressInterval = setInterval(() => {
+          setAnalysisProgress(prev => {
+            if (prev < 90) {
+              const newProgress = prev + Math.random() * 15;
+              if (newProgress < 30) {
+                setProgressLabel('Sending image to AI...');
+              } else if (newProgress < 60) {
+                setProgressLabel('AI analyzing your pile...');
+              } else if (newProgress < 90) {
+                setProgressLabel('Generating compliance report...');
+              }
+              return Math.min(newProgress, 90);
+            }
+            return prev;
+          });
+        }, 500);
 
         try {
           const response = await fetch('/api/analyze-pile', {
@@ -425,15 +457,26 @@
           }
 
           const result = await response.json();
-          setAnalysisResult(result);
+          
+          // Complete progress
+          clearInterval(progressInterval);
+          setAnalysisProgress(100);
+          setProgressLabel('Analysis complete!');
+          
+          // Small delay to show completion
+          setTimeout(() => {
+            setAnalysisResult(result);
+            setIsSubmitting(false);
+          }, 500);
+          
         } catch (err) {
+          clearInterval(progressInterval);
           console.error('Analysis request failed:', err);
           if (err && err.status === 413) {
             setError('The photo was too large to send to the analyzer. Try retaking it from a little farther back or using a lower-resolution photo.');
           } else {
             setError('We could not reach the analysis service. Please try again in a moment.');
           }
-        } finally {
           setIsSubmitting(false);
         }
       };
@@ -556,6 +599,16 @@
                   ? 'Submitting to n8n...'
                   : 'Send to Analysis'}
             </button>
+            
+            ${isSubmitting && html`
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center mb-3">
+                  <div className="loading-spinner mr-3"></div>
+                  <span className="text-sm font-medium text-blue-800">AI Analysis in Progress</span>
+                </div>
+                <${ProgressBar} progress=${analysisProgress} label=${progressLabel} />
+              </div>
+            `}
           </div>
 
           ${analysisResult && html`
@@ -572,7 +625,7 @@
                   <h4 className="text-lg font-semibold ${
                     analysisResult.compliant ? 'text-green-800' : 'text-red-800'
                   }">
-                    ${analysisResult.compliant ? 'Pile Looks Good!' : 'Issues Found'}
+                    ${analysisResult.compliant ? 'Ready for Pickup!' : 'Issues Found'}
                   </h4>
                   ${analysisResult.confidence !== undefined && html`
                     <p className="text-sm text-gray-600">
