@@ -492,112 +492,50 @@
       `;
     }
 
-    function normalizeReportToText(value) {
-      if (value === null || value === undefined) {
-        return '';
-      }
-
-      if (typeof value === 'string') {
-        return value;
-      }
-
-      if (Array.isArray(value)) {
-        return value.map(normalizeReportToText).filter(Boolean).join('\n');
-      }
-
-      if (typeof value === 'object') {
-        const parts = Object.entries(value)
-          .map(([key, val]) => {
-            const normalized = normalizeReportToText(val).trim();
-            if (!normalized) {
-              return '';
-            }
-            return `${key}: ${normalized}`;
-          })
-          .filter(Boolean);
-
-        if (parts.length > 0) {
-          return parts.join('\n');
-        }
-
-        try {
-          return JSON.stringify(value, null, 2);
-        } catch (error) {
-          return String(value);
-        }
-      }
-
-      return String(value);
-    }
-
-    function inferComplianceFromReportText(text, issuesList = []) {
-      const normalized = (text || '').toLowerCase();
-      const hasText = normalized.trim().length > 0;
-
-      const positiveSignals = [
-        '✅',
-        'approved',
-        'ready for pickup',
-        'ready for collection',
-        'pass',
-        'compliant',
-        'looks good',
-        'all clear',
-        'good to go'
-      ];
-
-      const negativeSignals = [
-        '❌',
-        'needs correction',
-        'needs attention',
-        'not compliant',
-        'non-compliant',
-        'fail',
-        'failing',
-        'issue',
-        'issues found',
-        'problem',
-        'not ready',
-        'hold pickup',
-        'requires changes'
-      ];
-
-      const hasPositive = positiveSignals.some((signal) => normalized.includes(signal));
-      const hasNegative = negativeSignals.some((signal) => normalized.includes(signal));
-
-      if (hasPositive && !hasNegative) {
-        return true;
-      }
-
-      if (hasNegative && !hasPositive) {
-        return false;
-      }
-
-      if (hasNegative) {
-        return false;
-      }
-
-      if (!hasText && Array.isArray(issuesList) && issuesList.length > 0) {
-        return false;
-      }
-
-      if (hasText) {
-        if (Array.isArray(issuesList) && issuesList.length > 0) {
-          return false;
-        }
-      }
-
-      return null;
-    }
-
     function renderReportContent(content) {
-      const plainText = normalizeReportToText(content);
-
-      if (!plainText) {
+      if (content === null || content === undefined) {
         return null;
       }
 
-      const lines = plainText
+      const normalizeToText = (value) => {
+        if (value === null || value === undefined) {
+          return '';
+        }
+
+        if (typeof value === 'string') {
+          return value;
+        }
+
+        if (Array.isArray(value)) {
+          return value.map(normalizeToText).filter(Boolean).join('\n');
+        }
+
+        if (typeof value === 'object') {
+          const parts = Object.entries(value)
+            .map(([key, val]) => {
+              const normalized = normalizeToText(val).trim();
+              if (!normalized) {
+                return '';
+              }
+              return `${key}: ${normalized}`;
+            })
+            .filter(Boolean);
+
+          if (parts.length > 0) {
+            return parts.join('\n');
+          }
+
+          try {
+            return JSON.stringify(value, null, 2);
+          } catch (error) {
+            return String(value);
+          }
+        }
+
+        return String(value);
+      };
+
+      const lines = normalizeToText(content)
         .split(/\r?\n/)
         .map((line) => line.trim())
         .filter(Boolean);
@@ -939,18 +877,11 @@
             rawResult.content ??
             null;
 
-          const issuesList = normalizeList(rawResult.issues);
-          const suggestionsList = normalizeList(rawResult.suggestions);
-          const reportPlainText = normalizeReportToText(reportContentSource);
-          const inferredCompliance = inferComplianceFromReportText(reportPlainText, issuesList);
-          const resolvedCompliance =
-            typeof rawResult.compliant === 'boolean' ? rawResult.compliant : inferredCompliance;
-
           setAnalysisResult({
-            compliant: resolvedCompliance,
+            compliant: typeof rawResult.compliant === 'boolean' ? rawResult.compliant : null,
             confidence: normalizeConfidence(rawResult.confidence),
-            issues: issuesList,
-            suggestions: suggestionsList,
+            issues: normalizeList(rawResult.issues),
+            suggestions: normalizeList(rawResult.suggestions),
             reportContent: reportContentSource,
             analysisTimestamp: rawResult.analysisTimestamp || new Date().toISOString(),
             raw: rawResult,
