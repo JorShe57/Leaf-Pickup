@@ -558,43 +558,53 @@
       const stripScripts = (input) =>
         (input || '').replace(/<script[\s\S]*?<\/script>/gi, '');
 
+      const bulletRemovalCSS = `
+        <style>
+          .list-item,
+          .action-item,
+          ul,
+          ol {
+            list-style: none !important;
+            padding-left: 0 !important;
+            margin-left: 0 !important;
+          }
+        </style>
+      `;
+
       const cleaned = reportString.replace(/\r\n/g, '\n');
-      let styles = '';
-      let bodyContent = '';
+      const assembleOutput = (styles, body) => {
+        const sanitizedBody = body.replace(/##\s+[^\n<]+/g, '');
+        const combined = `${styles}\n${bulletRemovalCSS}\n${sanitizedBody}`.trim();
+        return stripScripts(combined);
+      };
 
       if (typeof DOMParser !== 'undefined') {
         try {
           const parser = new DOMParser();
           const doc = parser.parseFromString(cleaned, 'text/html');
           if (doc) {
-            styles = Array.from(doc.querySelectorAll('style'))
+            const headStyles = Array.from(doc.querySelectorAll('style'))
               .map((node) => node.outerHTML)
               .join('\n');
-            bodyContent = doc.body && doc.body.innerHTML
-              ? doc.body.innerHTML
-              : cleaned;
+            const bodyMarkup =
+              (doc.body && doc.body.innerHTML && doc.body.innerHTML.trim()) || cleaned;
+            return assembleOutput(headStyles, bodyMarkup);
           }
         } catch (_error) {
           // Fallback to regex parsing below
         }
       }
 
-      if (!bodyContent) {
-        const bodyMatch = cleaned.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-        bodyContent = bodyMatch && bodyMatch[1] ? bodyMatch[1] : cleaned;
-      }
+      const bodyMatch = cleaned.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+      const headMatch = cleaned.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
 
-      if (!styles) {
-        const headMatch = cleaned.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
-        if (headMatch && headMatch[1]) {
-          styles = (headMatch[1].match(/<style[\s\S]*?<\/style>/gi) || []).join('\n');
-        }
-      }
+      const styles = headMatch && headMatch[1]
+        ? (headMatch[1].match(/<style[\s\S]*?<\/style>/gi) || []).join('\n')
+        : '';
 
-      const safeStyles = stripScripts(styles);
-      const safeBody = stripScripts(bodyContent);
+      const bodyContent = bodyMatch && bodyMatch[1] ? bodyMatch[1] : cleaned;
 
-      return `${safeStyles}\n${safeBody}`.trim();
+      return assembleOutput(styles, bodyContent);
     }
 
     function extractHtmlMarkupFromContent(content) {
@@ -638,7 +648,11 @@
     function renderReportContent(content) {
       const htmlMarkup = extractHtmlMarkupFromContent(content);
       if (htmlMarkup) {
-        return html`<div className="prose prose-sm max-w-none" dangerouslySetInnerHTML=${{ __html: htmlMarkup }}></div>`;
+        return html`<div
+          className="prose prose-sm max-w-none"
+          style=${{ listStyleType: 'none', paddingLeft: 0, marginLeft: 0 }}
+          dangerouslySetInnerHTML=${{ __html: htmlMarkup }}
+        ></div>`;
       }
 
       const reportString = normalizeReportToText(content).trim();
