@@ -423,7 +423,7 @@
       return html`<div className="w-full bg-gray-200 rounded-full h-2 mb-2">
         <div 
           className="bg-green-600 h-2 rounded-full transition-all duration-300 ease-out"
-          style="width: ${progress}%"
+          style=${{ width: `${progress}%` }}
         ></div>
       </div>
       <p className="text-sm text-gray-600 text-center">${label}</p>`;
@@ -746,7 +746,10 @@
       }
 
       return html`
-        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-green-600 to-green-700 text-white p-4 shadow-lg z-50 border-t-4 border-green-400" style="padding-bottom: calc(1rem + env(safe-area-inset-bottom))">
+        <div 
+          className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-green-600 to-green-700 text-white p-4 shadow-lg z-50 border-t-4 border-green-400"
+          style=${{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+        >
           <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center flex-1">
               <span className="text-2xl mr-3">🍂</span>
