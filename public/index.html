@@ -1209,6 +1209,92 @@
     }
 
     /**
+     * CollapsibleRoute Component
+     * Displays a collapsible group of streets for a single route
+     */
+    function CollapsibleRoute({ routeNumber, records, isExpanded, onToggle, onStreetClick }) {
+      const completedCount = records.filter(r => normalizeStatus(r.status) === 'Completed').length;
+      const totalCount = records.length;
+      const completionPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+      
+      // Determine overall route status
+      const inProgressCount = records.filter(r => normalizeStatus(r.status) === 'In Progress').length;
+      let routeStatus = 'Not Started';
+      if (completedCount === totalCount) {
+        routeStatus = 'Completed';
+      } else if (completedCount > 0 || inProgressCount > 0) {
+        routeStatus = 'In Progress';
+      }
+
+      return html`
+        <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm mb-3">
+          <button
+            type="button"
+            onClick=${onToggle}
+            className="w-full px-4 py-4 min-h-[60px] bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-150 transition-all duration-200 flex items-center justify-between"
+          >
+            <div className="flex items-center space-x-3 flex-1">
+              <span className="text-xl transition-transform duration-200 ${isExpanded ? 'transform rotate-90' : ''}">
+                ▶
+              </span>
+              <div className="text-left">
+                <h3 className="text-lg font-bold text-green-800">
+                  Route ${routeNumber || 'Unknown'}
+                </h3>
+                <p className="text-sm text-green-600">
+                  ${totalCount} ${totalCount === 1 ? 'street' : 'streets'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                completionPercent === 100 
+                  ? 'bg-green-100 text-green-800' 
+                  : completionPercent > 0 
+                    ? 'bg-yellow-100 text-yellow-800' 
+                    : 'bg-gray-100 text-gray-700'
+              }">
+                ${completionPercent}% complete
+              </span>
+              <${StatusBadge} status=${routeStatus} />
+            </div>
+          </button>
+          
+          ${isExpanded ? html`
+            <div className="border-t border-gray-200">
+              <ul className="divide-y divide-gray-100">
+                ${records.map((record) => html`
+                  <li key=${record.id}>
+                    <button
+                      type="button"
+                      onClick=${() => onStreetClick(record)}
+                      className="flex w-full items-center justify-between px-6 py-3 min-h-[56px] text-left transition-all duration-200 hover:bg-gray-50"
+                    >
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">${record.street}</p>
+                        ${record.dateStarted ? html`
+                          <p className="text-xs text-gray-500 mt-1">
+                            Started: ${formatDate(record.dateStarted)}
+                          </p>
+                        ` : null}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <${StatusBadge} status=${record.status || 'Unknown'} />
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </div>
+                    </button>
+                  </li>
+                `)}
+              </ul>
+            </div>
+          ` : null}
+        </div>
+      `;
+    }
+
+    /**
      * ServiceMessages Component
      * Displays messages from the service department fetched from Airtable
      */
@@ -1324,6 +1410,7 @@
       const [showAnalyzer, setShowAnalyzer] = useState(false);
       const [modalRecord, setModalRecord] = useState(null);
       const [isModalOpen, setIsModalOpen] = useState(false);
+      const [expandedRoutes, setExpandedRoutes] = useState(new Set());
 
       useEffect(() => {
         let isMounted = true;
@@ -1396,6 +1483,44 @@
         );
       }, [sortedRecords, searchTerm]);
 
+      // Group filtered records by route number
+      const routeGroups = useMemo(() => {
+        const groups = {};
+        
+        filteredRecords.forEach((record) => {
+          const route = record.routeNumber || 'Unknown';
+          if (!groups[route]) {
+            groups[route] = [];
+          }
+          groups[route].push(record);
+        });
+
+        // Convert to array and sort by route number
+        return Object.entries(groups)
+          .sort((a, b) => {
+            const aNum = parseInt(a[0]) || 999999;
+            const bNum = parseInt(b[0]) || 999999;
+            return aNum - bNum;
+          })
+          .map(([routeNumber, records]) => ({
+            routeNumber,
+            records,
+          }));
+      }, [filteredRecords]);
+
+      // Toggle route expansion
+      const toggleRoute = (routeNumber) => {
+        setExpandedRoutes(prev => {
+          const newSet = new Set(prev);
+          if (newSet.has(routeNumber)) {
+            newSet.delete(routeNumber);
+          } else {
+            newSet.add(routeNumber);
+          }
+          return newSet;
+        });
+      };
+
       useEffect(() => {
         if (!activeId && filteredRecords.length > 0) {
           setActiveId(filteredRecords[0].id);
@@ -1445,40 +1570,28 @@
                   No streets match that search. Try another name or double-check your spelling.
                 </p>
               </div>`
-            : html`<ul className="divide-y divide-gray-200">
-                ${filteredRecords.map((record) => {
-                  return html`<li key=${record.id}>
-                    <button
-                      type="button"
-                      onClick=${() => openModal(record)}
-                      className="flex w-full items-center justify-between px-4 py-4 min-h-[60px] text-left transition-all duration-200 card-hover hover:bg-gray-50 hover:border-l-4 hover:border-l-gray-300"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">${record.street}</p>
-                        <p className="text-sm text-gray-500 mt-1">
-                          Route ${record.routeNumber || '--'}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <${StatusBadge} status=${record.status || 'Unknown'} />
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                      </div>
-                    </button>
-                  </li>`;
+            : html`<div className="space-y-2">
+                ${routeGroups.map((group) => {
+                  return html`<${CollapsibleRoute}
+                    key=${group.routeNumber}
+                    routeNumber=${group.routeNumber}
+                    records=${group.records}
+                    isExpanded=${expandedRoutes.has(group.routeNumber)}
+                    onToggle=${() => toggleRoute(group.routeNumber)}
+                    onStreetClick=${openModal}
+                  />`;
                 })}
-              </ul>`;
+              </div>`;
 
 
         mainContent = html`<div className="mt-8 space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <span className="text-sm font-medium text-gray-600">
-                ${filteredRecords.length} ${filteredRecords.length === 1 ? 'result' : 'results'}
+                ${routeGroups.length} ${routeGroups.length === 1 ? 'route' : 'routes'} • ${filteredRecords.length} ${filteredRecords.length === 1 ? 'street' : 'streets'}
               </span>
               ${filteredRecords.length > 0 ? html`<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                ${filteredRecords.filter(r => r.status === 'Completed').length} completed
+                ${filteredRecords.filter(r => normalizeStatus(r.status) === 'Completed').length} completed
               </span>` : null}
             </div>
             <div className="flex items-center space-x-3">
