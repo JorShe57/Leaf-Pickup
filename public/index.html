@@ -1224,12 +1224,22 @@
           try {
             const response = await fetch('/api/messages');
             if (!response.ok) {
-              throw new Error('Unable to fetch messages.');
+              const errorText = await response.text();
+              console.error('API error response:', response.status, errorText);
+              throw new Error(`Unable to fetch messages (${response.status})`);
             }
 
             const payload = await response.json();
             if (isMounted) {
-              setMessages(Array.isArray(payload.messages) ? payload.messages : []);
+              // Sort messages by date (newest first) on client side
+              const sortedMessages = Array.isArray(payload.messages) 
+                ? payload.messages.sort((a, b) => {
+                    if (!a.dateCreated) return 1;
+                    if (!b.dateCreated) return -1;
+                    return new Date(b.dateCreated) - new Date(a.dateCreated);
+                  })
+                : [];
+              setMessages(sortedMessages);
             }
           } catch (err) {
             console.error('Error loading messages:', err);

@@ -24,10 +24,6 @@ export default async function handler(req, res) {
     do {
       const url = new URL(baseUrl);
       url.searchParams.set('pageSize', '100');
-      
-      // Sort by Date Created, newest first
-      url.searchParams.set('sort[0][field]', 'Date Created');
-      url.searchParams.set('sort[0][direction]', 'desc');
 
       if (nextOffset) {
         url.searchParams.set('offset', nextOffset);
@@ -40,7 +36,9 @@ export default async function handler(req, res) {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch from Airtable (status ${response.status})`);
+        const errorText = await response.text();
+        console.error(`Airtable API error (${response.status}):`, errorText);
+        throw new Error(`Failed to fetch from Airtable (status ${response.status}): ${errorText}`);
       }
 
       const page = await response.json();
