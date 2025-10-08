@@ -1562,6 +1562,9 @@
           </div>
         </div>`;
       } else {
+        // Check if user is searching
+        const isSearching = searchTerm.trim().length > 0;
+        
         const resultsList =
           filteredRecords.length === 0
             ? html`<div className="p-6 text-center">
@@ -1570,18 +1573,46 @@
                   No streets match that search. Try another name or double-check your spelling.
                 </p>
               </div>`
-            : html`<div className="space-y-2">
-                ${routeGroups.map((group) => {
-                  return html`<${CollapsibleRoute}
-                    key=${group.routeNumber}
-                    routeNumber=${group.routeNumber}
-                    records=${group.records}
-                    isExpanded=${expandedRoutes.has(group.routeNumber)}
-                    onToggle=${() => toggleRoute(group.routeNumber)}
-                    onStreetClick=${openModal}
-                  />`;
-                })}
-              </div>`;
+            : isSearching
+              ? html`<div className="divide-y divide-gray-100">
+                  ${filteredRecords.map((record) => html`
+                    <button
+                      key=${record.id}
+                      type="button"
+                      onClick=${() => openModal(record)}
+                      className="flex w-full items-center justify-between px-4 py-3 min-h-[56px] text-left transition-all duration-200 hover:bg-green-50"
+                    >
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">
+                          ${record.street}
+                          ${record.routeNumber ? html`
+                            <span className="ml-2 text-sm text-green-700 font-normal">
+                              (Route #${record.routeNumber})
+                            </span>
+                          ` : null}
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <${StatusBadge} status=${record.status || 'Unknown'} />
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                      </div>
+                    </button>
+                  `)}
+                </div>`
+              : html`<div className="space-y-2">
+                  ${routeGroups.map((group) => {
+                    return html`<${CollapsibleRoute}
+                      key=${group.routeNumber}
+                      routeNumber=${group.routeNumber}
+                      records=${group.records}
+                      isExpanded=${expandedRoutes.has(group.routeNumber)}
+                      onToggle=${() => toggleRoute(group.routeNumber)}
+                      onStreetClick=${openModal}
+                    />`;
+                  })}
+                </div>`;
 
 
         mainContent = html`<div className="mt-8 space-y-4">
