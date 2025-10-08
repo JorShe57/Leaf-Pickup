@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icon Generator - Leaf Tracker</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #1a6b2e;
+      margin-bottom: 10px;
+    }
+    .description {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    button {
+      background: #1a6b2e;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px 10px 10px 0;
+    }
+    button:hover {
+      background: #226b38;
+    }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .preview-item {
+      text-align: center;
+    }
+    .preview-item canvas {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .preview-item p {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #666;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 12px;
+      background: #e8f5e9;
+      border-left: 4px solid #1a6b2e;
+      border-radius: 4px;
+      display: none;
+    }
+    .status.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🍂 Leaf Tracker Icon Generator</h1>
+    <p class="description">
+      This tool generates all required PWA icons for the Westlake Leaf Collection Tracker.
+      Click "Generate All Icons" to create and download all 8 icon sizes.
+    </p>
+    
+    <button onclick="generateAllIcons()">Generate All Icons</button>
+    <button onclick="previewIcons()">Preview Icons</button>
+    
+    <div id="status" class="status"></div>
+    
+    <div id="preview" class="preview-grid"></div>
+  </div>
+
+  <script>
+    const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+    
+    function drawLeafIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      const padding = size * 0.15;
+      const leafSize = size - (padding * 2);
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, size, size);
+      
+      // Background (white with slight green tint)
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      
+      // Center the leaf
+      ctx.save();
+      ctx.translate(size / 2, size / 2);
+      
+      // Scale based on size
+      const scale = leafSize / 100;
+      ctx.scale(scale, scale);
+      
+      // Draw leaf shape
+      ctx.beginPath();
+      
+      // Main leaf body (using bezier curves for organic shape)
+      ctx.moveTo(0, -45);
+      ctx.bezierCurveTo(25, -40, 35, -20, 35, 10);
+      ctx.bezierCurveTo(35, 35, 20, 45, 0, 48);
+      ctx.bezierCurveTo(-20, 45, -35, 35, -35, 10);
+      ctx.bezierCurveTo(-35, -20, -25, -40, 0, -45);
+      
+      // Gradient fill for depth
+      const gradient = ctx.createLinearGradient(-35, -45, 35, 48);
+      gradient.addColorStop(0, '#2d8a3e');
+      gradient.addColorStop(0.5, '#1a6b2e');
+      gradient.addColorStop(1, '#145523');
+      
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      
+      // Leaf outline
+      ctx.strokeStyle = '#0d3317';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      
+      // Center vein
+      ctx.beginPath();
+      ctx.moveTo(0, -42);
+      ctx.lineTo(0, 46);
+      ctx.strokeStyle = '#145523';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      
+      // Side veins (left side)
+      const veinCount = 4;
+      for (let i = 0; i < veinCount; i++) {
+        const t = (i + 1) / (veinCount + 1);
+        const y = -42 + (88 * t);
+        const x = 25 * Math.sin(t * Math.PI);
+        
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.quadraticCurveTo(x * 0.7, y + 5, x, y + 8);
+        ctx.strokeStyle = 'rgba(20, 85, 35, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+      
+      // Side veins (right side)
+      for (let i = 0; i < veinCount; i++) {
+        const t = (i + 1) / (veinCount + 1);
+        const y = -42 + (88 * t);
+        const x = -25 * Math.sin(t * Math.PI);
+        
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.quadraticCurveTo(x * 0.7, y + 5, x, y + 8);
+        ctx.strokeStyle = 'rgba(20, 85, 35, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+      
+      // Highlight for 3D effect
+      ctx.beginPath();
+      ctx.ellipse(-8, -15, 12, 20, -0.3, 0, Math.PI * 2);
+      const highlightGradient = ctx.createRadialGradient(-8, -15, 0, -8, -15, 20);
+      highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+      highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = highlightGradient;
+      ctx.fill();
+      
+      ctx.restore();
+    }
+    
+    function createIconCanvas(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      drawLeafIcon(canvas, size);
+      return canvas;
+    }
+    
+    function downloadIcon(canvas, filename) {
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          a.click();
+          URL.revokeObjectURL(url);
+          setTimeout(resolve, 100); // Small delay between downloads
+        }, 'image/png');
+      });
+    }
+    
+    async function generateAllIcons() {
+      const status = document.getElementById('status');
+      status.textContent = 'Generating icons...';
+      status.className = 'status show';
+      
+      for (const size of sizes) {
+        const canvas = createIconCanvas(size);
+        const filename = `icon-${size}x${size}.png`;
+        await downloadIcon(canvas, filename);
+        status.textContent = `Generated ${filename}...`;
+      }
+      
+      status.textContent = `✅ All ${sizes.length} icons generated successfully! Move them to the /public/icons/ folder.`;
+    }
+    
+    function previewIcons() {
+      const preview = document.getElementById('preview');
+      preview.innerHTML = '';
+      
+      sizes.forEach(size => {
+        const container = document.createElement('div');
+        container.className = 'preview-item';
+        
+        const canvas = createIconCanvas(size);
+        canvas.style.width = '100px';
+        canvas.style.height = '100px';
+        
+        const label = document.createElement('p');
+        label.textContent = `${size}x${size}`;
+        
+        container.appendChild(canvas);
+        container.appendChild(label);
+        preview.appendChild(container);
+      });
+      
+      const status = document.getElementById('status');
+      status.textContent = '👁️ Preview generated! Click "Generate All Icons" to download.';
+      status.className = 'status show';
+    }
+    
+    // Auto-preview on load
+    window.addEventListener('load', previewIcons);
+  </script>
+</body>
+</html>

@@ -2,8 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Westlake Leaf Collection Tracker</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="Track leaf collection routes and schedules for Westlake. Check your street's pickup status and analyze your leaf pile.">
+  <meta name="theme-color" content="#1a6b2e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Leaf Tracker">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json">
+  
+  <!-- Icons for iOS -->
+  <link rel="apple-touch-icon" href="/icons/icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="96x96" href="/icons/icon-96x96.png">
+  <link rel="apple-touch-icon" sizes="128x128" href="/icons/icon-128x128.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
+  <link rel="apple-touch-icon" sizes="384x384" href="/icons/icon-384x384.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-152x152.png">
+  
+  <!-- Preload critical resources -->
+  <link rel="preload" href="/images/sebastian-volkel-7QT_puk5CJQ-unsplash.jpg.webp" as="image">
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -117,7 +145,48 @@
       50% { opacity: 0.7; }
     }
 
-    /* Mobile optimizations */
+    /* Mobile optimizations and touch improvements */
+    * {
+      -webkit-tap-highlight-color: rgba(26, 107, 46, 0.2);
+      touch-action: manipulation;
+    }
+    
+    /* Safe area support for notched devices */
+    body {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+    
+    /* Better scrolling on mobile */
+    .scroll-container {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+    
+    /* Touch target improvements - minimum 44x44px */
+    button, a, input, select {
+      min-height: 44px;
+      touch-action: manipulation;
+    }
+    
+    /* Active state feedback for touch */
+    button:active, .card-hover:active {
+      transform: scale(0.98);
+      transition: transform 0.1s ease;
+    }
+    
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    
+    /* Mobile-specific styles */
     @media (max-width: 768px) {
       .camera-container {
         margin: 0 -1rem;
@@ -126,11 +195,36 @@
       .camera-preview {
         height: 200px;
       }
+      
+      /* Hide desktop-only elements */
+      .desktop-only {
+        display: none !important;
+      }
+      
+      /* Stack layout on mobile */
+      .mobile-stack {
+        grid-template-columns: 1fr !important;
+      }
+      
+      /* Larger text for readability */
+      body {
+        font-size: 16px;
+      }
+      
+      /* Better spacing on mobile */
+      .mobile-spacing {
+        padding: 0.75rem !important;
+      }
+      
+      /* Full width buttons on mobile */
+      .mobile-full-button {
+        width: 100%;
+      }
     }
 
     /* Background image styling */
     .app-background {
-      background-image: url('/images/sebastian-volkel-7QT_puk5CJQ-unsplash.jpg.webp');
+      background-image: url('');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -164,6 +258,96 @@
   <script>
     const { useState, useEffect, useMemo } = React;
     const html = htm.bind(React.createElement);
+
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('/sw.js')
+          .then((registration) => {
+            console.log('[PWA] Service Worker registered:', registration.scope);
+            
+            // Check for updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New update available
+                  if (confirm('A new version is available! Reload to update?')) {
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                  }
+                }
+              });
+            });
+          })
+          .catch((error) => {
+            console.error('[PWA] Service Worker registration failed:', error);
+          });
+      });
+      
+      // Handle controller change (new service worker activated)
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        console.log('[PWA] Service Worker controller changed');
+      });
+    }
+
+    // Install Prompt Handler
+    let deferredPrompt = null;
+    let installPromptShown = false;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      console.log('[PWA] Install prompt available');
+      e.preventDefault();
+      deferredPrompt = e;
+      
+      // Show install button (will be handled in React component)
+      window.dispatchEvent(new CustomEvent('pwa-installable', { detail: { prompt: e } }));
+    });
+
+    window.addEventListener('appinstalled', () => {
+      console.log('[PWA] App installed successfully');
+      deferredPrompt = null;
+    });
+
+    // Function to show install prompt
+    async function showInstallPrompt() {
+      if (!deferredPrompt) {
+        // Check if already installed
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+          alert('App is already installed!');
+          return false;
+        }
+        
+        // Show iOS instructions
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        
+        if (isIOS || isSafari) {
+          alert('To install on iOS:\n\n1. Tap the Share button (box with arrow)\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to confirm');
+          return false;
+        }
+        
+        return false;
+      }
+      
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log('[PWA] Install prompt outcome:', outcome);
+      
+      if (outcome === 'accepted') {
+        deferredPrompt = null;
+        return true;
+      }
+      
+      return false;
+    }
+
+    // Check if running as installed PWA
+    function isInstalled() {
+      return window.matchMedia('(display-mode: standalone)').matches || 
+             window.navigator.standalone === true;
+    }
 
     const statusStyles = {
       'Not Started': 'bg-gray-100 text-gray-700 border-gray-300',
@@ -365,6 +549,87 @@
       return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(
         parsed
       );
+    }
+
+    // Install Prompt Banner Component
+    function InstallPrompt() {
+      const [showPrompt, setShowPrompt] = useState(false);
+      const [isInstalled, setIsInstalled] = useState(false);
+
+      useEffect(() => {
+        // Check if already installed
+        setIsInstalled(
+          window.matchMedia('(display-mode: standalone)').matches || 
+          window.navigator.standalone === true
+        );
+
+        // Listen for install prompt availability
+        const handleInstallable = () => {
+          if (!isInstalled) {
+            setShowPrompt(true);
+          }
+        };
+
+        window.addEventListener('pwa-installable', handleInstallable);
+        
+        // Check immediately if prompt is available
+        if (deferredPrompt && !isInstalled) {
+          setShowPrompt(true);
+        }
+
+        return () => {
+          window.removeEventListener('pwa-installable', handleInstallable);
+        };
+      }, []);
+
+      const handleInstall = async () => {
+        const success = await showInstallPrompt();
+        if (success) {
+          setShowPrompt(false);
+          setIsInstalled(true);
+        }
+      };
+
+      const handleDismiss = () => {
+        setShowPrompt(false);
+      };
+
+      if (isInstalled) {
+        return null;
+      }
+
+      if (!showPrompt) {
+        return null;
+      }
+
+      return html`
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-green-600 to-green-700 text-white p-4 shadow-lg z-50 border-t-4 border-green-400" style="padding-bottom: calc(1rem + env(safe-area-inset-bottom))">
+          <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center flex-1">
+              <span className="text-2xl mr-3">🍂</span>
+              <div>
+                <p className="font-semibold text-sm">Install Leaf Tracker</p>
+                <p className="text-xs opacity-90">Get quick access from your home screen</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick=${handleInstall}
+                className="bg-white text-green-700 px-4 py-2 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors whitespace-nowrap"
+              >
+                Install
+              </button>
+              <button
+                onClick=${handleDismiss}
+                className="text-white hover:bg-green-800 px-3 py-2 rounded-lg transition-colors"
+                aria-label="Dismiss"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     // Camera Analysis Component (file upload to n8n workflow)
@@ -884,7 +1149,7 @@
                     <button
                       type="button"
                       onClick=${() => openModal(record)}
-                      className="flex w-full items-center justify-between px-4 py-4 text-left transition-all duration-200 card-hover hover:bg-gray-50 hover:border-l-4 hover:border-l-gray-300"
+                      className="flex w-full items-center justify-between px-4 py-4 min-h-[60px] text-left transition-all duration-200 card-hover hover:bg-gray-50 hover:border-l-4 hover:border-l-gray-300"
                     >
                       <div className="flex-1">
                         <p className="font-medium text-gray-900">${record.street}</p>
@@ -960,7 +1225,7 @@
               </p>
             </div>`;
 
-        mainContent = html`<div className="mt-8 grid gap-6 lg:grid-cols-[2fr,3fr]">
+        mainContent = html`<div className="mt-8 grid gap-6 grid-cols-1 lg:grid-cols-[2fr,3fr] mobile-stack">
           <section aria-label="Street results" className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -1002,7 +1267,7 @@
                   : null}
               </div>
             </div>
-            <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white/90 backdrop-blur-sm shadow-sm">
+            <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white/90 backdrop-blur-sm shadow-sm scroll-container">
               ${resultsList}
             </div>
           </section>
@@ -1019,23 +1284,23 @@
         </div>`;
       }
 
-      return html`<div className="min-h-screen app-background px-4 py-10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8 app-content">
+      return html`<div className="min-h-screen app-background px-3 md:px-4 py-6 md:py-10">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 md:gap-8 app-content">
           <header className="text-center">
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-8 border border-green-200">
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">🍂</div>
-                <h1 className="text-4xl font-bold text-green-800">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-4 md:p-8 border border-green-200">
+              <div className="flex items-center justify-center mb-3 md:mb-4">
+                <div className="text-3xl md:text-4xl mr-2 md:mr-3">🍂</div>
+                <h1 className="text-2xl md:text-4xl font-bold text-green-800">
                   Westlake Leaf Collection Tracker
                 </h1>
               </div>
-              <p className="text-lg text-gray-600 mb-4">
+              <p className="text-base md:text-lg text-gray-600 mb-3 md:mb-4">
                 Search your street to see the latest pickup status
               </p>
-              <div className="flex gap-3 justify-center mb-2">
+              <div className="flex gap-3 justify-center mb-2 flex-wrap">
                 <button
                   onClick=${() => setShowAnalyzer(!showAnalyzer)}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center"
+                  className="bg-blue-600 text-white px-6 py-3 min-h-[48px] rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center"
                 >
                   <span className="mr-2">📸</span>
                   ${showAnalyzer ? 'Hide' : 'Analyze'} My Pile
@@ -1048,13 +1313,13 @@
           </header>
 
           ${showAnalyzer ? html`
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-6 mb-6">
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
               <${CameraAnalysis} />
             </div>
           ` : null}
 
           <main className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+            <div className="bg-gradient-to-r from-green-600 to-green-700 px-4 md:px-6 py-3 md:py-4">
               <div className="flex flex-col gap-4">
                 <label className="text-sm font-medium text-white flex items-center" htmlFor="street-search">
                   <span className="mr-2">🔍</span>
@@ -1071,13 +1336,14 @@
               </div>
             </div>
             
-            <div className="p-6">
+            <div className="p-4 md:p-6">
               ${mainContent}
             </div>
           </main>
         </div>
         
         <${RouteModal} record=${modalRecord} isOpen=${isModalOpen} onClose=${closeModal} />
+        <${InstallPrompt} />
       </div>`;
     }
 
