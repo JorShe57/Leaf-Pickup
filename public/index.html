@@ -466,27 +466,15 @@
     }
 
     function RouteModal({ record, isOpen, onClose }) {
-      // SMS Subscription Form State
+      // Email Alert Subscription Form State
       const [formData, setFormData] = useState({
         subscriberName: '',
-        phoneNumber: '',
         email: '',
         optInConfirmed: false
       });
       const [isSubmitting, setIsSubmitting] = useState(false);
       const [submitError, setSubmitError] = useState(null);
       const [submitSuccess, setSubmitSuccess] = useState(false);
-
-      // Phone number formatting helper
-      const formatPhoneNumber = (phone) => {
-        const cleaned = phone.replace(/\D/g, '');
-        if (cleaned.length === 10) {
-          return `+1${cleaned}`;
-        } else if (cleaned.length === 11 && cleaned.startsWith('1')) {
-          return `+${cleaned}`;
-        }
-        return phone;
-      };
 
       // Form submission handler
       const handleSubmit = async (e) => {
@@ -498,13 +486,13 @@
           return;
         }
         
-        if (!formData.phoneNumber.trim()) {
-          alert('Please enter your phone number');
+        if (!formData.email.trim()) {
+          alert('Please enter your email address');
           return;
         }
         
         if (!formData.optInConfirmed) {
-          alert('Please confirm you want to receive SMS alerts');
+          alert('Please confirm you want to receive email alerts');
           return;
         }
         
@@ -513,8 +501,6 @@
         setSubmitSuccess(false);
         
         try {
-          const formattedPhone = formatPhoneNumber(formData.phoneNumber);
-          
           const response = await fetch('/api/subscribe-sms', {
             method: 'POST',
             headers: {
@@ -522,8 +508,7 @@
             },
             body: JSON.stringify({
               subscriberName: formData.subscriberName,
-              phoneNumber: formattedPhone,
-              email: formData.email || undefined,
+              email: formData.email,
               streetId: record.id
             })
           });
@@ -537,7 +522,6 @@
           setSubmitSuccess(true);
           setFormData({
             subscriberName: '',
-            phoneNumber: '',
             email: '',
             optInConfirmed: false
           });
@@ -615,17 +599,17 @@
                 `}
               </div>
 
-              <!-- SMS Alert Subscription Section -->
+              <!-- Email Alert Subscription Section -->
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200 mb-4">
                   <div className="flex items-start space-x-3">
-                    <span className="text-2xl">📱</span>
+                    <span className="text-2xl">📧</span>
                     <div className="flex-1">
                       <h5 className="text-sm font-semibold text-gray-900 mb-1">
-                        Get SMS Alerts
+                        Get Email Alerts
                       </h5>
                       <p className="text-xs text-gray-600 mb-3">
-                        Receive text message updates when ${record.street}'s leaf pickup status changes.
+                        Receive email updates when ${record.street}'s leaf pickup status changes.
                       </p>
                     </div>
                   </div>
@@ -636,7 +620,7 @@
                     <span className="text-xl">✅</span>
                     <div>
                       <p className="text-sm font-medium text-green-800">Successfully subscribed!</p>
-                      <p className="text-xs text-green-600 mt-1">You'll receive SMS alerts for ${record.street}</p>
+                      <p className="text-xs text-green-600 mt-1">You'll receive email alerts for ${record.street}</p>
                     </div>
                   </div>
                 ` : html`
@@ -667,24 +651,8 @@
                     </div>
                     
                     <div>
-                      <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone Number *
-                      </label>
-                      <input
-                        id="phoneNumber"
-                        type="tel"
-                        placeholder="(555) 123-4567"
-                        value=${formData.phoneNumber}
-                        onInput=${(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        required
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Standard SMS rates may apply</p>
-                    </div>
-                    
-                    <div>
                       <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                        Email (Optional)
+                        Email Address *
                       </label>
                       <input
                         id="email"
@@ -693,6 +661,7 @@
                         value=${formData.email}
                         onInput=${(e) => setFormData({ ...formData, email: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        required
                       />
                     </div>
                     
@@ -706,7 +675,7 @@
                         required
                       />
                       <label htmlFor="optInConfirmed" className="text-xs text-gray-600">
-                        I agree to receive SMS alerts about leaf pickup status for ${record.street}. I can unsubscribe anytime by texting STOP.
+                        I agree to receive email alerts about leaf pickup status for ${record.street}. To opt out of this service, email jshevel@cityofwestlake.org
                       </label>
                     </div>
                     

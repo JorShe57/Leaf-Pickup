@@ -1,6 +1,6 @@
 /**
- * SMS Subscription API Endpoint
- * Handles SMS alert subscriptions for leaf pickup status updates
+ * Email Alert Subscription API Endpoint
+ * Handles email alert subscriptions for leaf pickup status updates
  */
 export default async function handler(req, res) {
   // Enable CORS
@@ -22,30 +22,30 @@ export default async function handler(req, res) {
   const SUBSCRIPTIONS_TABLE_ID = 'tblkL5V0BMP6UsSPx';
 
   if (!AIRTABLE_API_KEY) {
-    console.error('[Subscribe SMS] Missing Airtable API key');
+    console.error('[Subscribe Email] Missing Airtable API key');
     return res.status(500).json({ error: 'Server misconfiguration' });
   }
 
   try {
-    const { subscriberName, phoneNumber, email, streetId } = req.body;
+    const { subscriberName, email, streetId } = req.body;
 
     // Validate required fields
-    if (!subscriberName || !phoneNumber || !streetId) {
+    if (!subscriberName || !email || !streetId) {
       return res.status(400).json({ 
         error: 'Missing required fields',
-        details: 'subscriberName, phoneNumber, and streetId are required'
+        details: 'subscriberName, email, and streetId are required'
       });
     }
 
     // Validate field types
-    if (typeof subscriberName !== 'string' || typeof phoneNumber !== 'string' || typeof streetId !== 'string') {
+    if (typeof subscriberName !== 'string' || typeof email !== 'string' || typeof streetId !== 'string') {
       return res.status(400).json({ 
         error: 'Invalid field types',
         details: 'All required fields must be strings'
       });
     }
 
-    console.log(`[Subscribe SMS] Creating subscription for ${subscriberName} (${phoneNumber}) on street ${streetId}`);
+    console.log(`[Subscribe Email] Creating subscription for ${subscriberName} (${email}) on street ${streetId}`);
 
     // Create Airtable record
     const response = await fetch(
@@ -59,8 +59,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           fields: {
             'Subscriber Name': subscriberName,
-            'Phone Number': phoneNumber,
-            'Email': email || undefined,
+            'Email': email,
             'Street': [streetId], // Link to street record
             'Active': true
           }
@@ -70,21 +69,21 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error('[Subscribe SMS] Airtable API error:', response.status, errorData);
+      console.error('[Subscribe Email] Airtable API error:', response.status, errorData);
       throw new Error(errorData.error?.message || 'Airtable API error');
     }
 
     const data = await response.json();
-    console.log(`[Subscribe SMS] Successfully created subscription record ${data.id}`);
+    console.log(`[Subscribe Email] Successfully created subscription record ${data.id}`);
     
     return res.status(200).json({ 
       success: true,
       recordId: data.id,
-      message: 'Successfully subscribed to SMS alerts'
+      message: 'Successfully subscribed to email alerts'
     });
     
   } catch (error) {
-    console.error('[Subscribe SMS] Error:', error);
+    console.error('[Subscribe Email] Error:', error);
     return res.status(500).json({ 
       error: 'Failed to create subscription',
       details: error.message 
