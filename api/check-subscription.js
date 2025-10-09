@@ -1,6 +1,6 @@
 /**
  * Check Subscription API Endpoint
- * Checks if a user is subscribed to push notifications for a specific street
+ * Note: Temporarily disabled during transition to new alerts platform
  */
 export default async function handler(req, res) {
   // Enable CORS
@@ -34,36 +34,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid or missing streetId' });
     }
 
-    if (!playerId || typeof playerId !== 'string') {
-      return res.status(400).json({ error: 'Invalid or missing playerId' });
-    }
+    console.log(`[CheckSubscription] Check request received for street ${streetId}`);
+    console.log(`[CheckSubscription] Notifications temporarily disabled during platform transition`);
 
-    // Sanitize inputs
-    const sanitizedStreetId = streetId.trim();
-    const sanitizedPlayerId = playerId.trim();
-
-    // Query for existing subscription
-    const checkUrl = new URL(`https://api.airtable.com/v0/${BASE_ID}/${SUBSCRIPTIONS_TABLE_ID}`);
-    checkUrl.searchParams.set('filterByFormula', `AND({Street Record ID}='${sanitizedStreetId}',{OneSignal Player ID}='${sanitizedPlayerId}')`);
-    checkUrl.searchParams.set('maxRecords', '1');
-
-    const checkResponse = await fetch(checkUrl, {
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
-      },
-    });
-
-    if (!checkResponse.ok) {
-      throw new Error(`Failed to check subscription (status ${checkResponse.status})`);
-    }
-
-    const records = await checkResponse.json();
-
-    const isSubscribed = records.records && records.records.length > 0;
-
+    // Always return not subscribed during transition
     return res.status(200).json({ 
-      subscribed: isSubscribed,
-      subscriptionId: isSubscribed ? records.records[0].id : null
+      subscribed: false,
+      subscriptionId: null,
+      temporarilyDisabled: true
     });
 
   } catch (error) {

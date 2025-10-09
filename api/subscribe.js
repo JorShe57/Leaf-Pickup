@@ -1,6 +1,6 @@
 /**
  * Subscribe API Endpoint
- * Saves a user's subscription to push notifications for a specific street
+ * Note: Temporarily disabled during transition to new alerts platform
  */
 export default async function handler(req, res) {
   // Enable CORS
@@ -34,77 +34,20 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid or missing streetId' });
     }
 
-    if (!playerId || typeof playerId !== 'string') {
-      return res.status(400).json({ error: 'Invalid or missing playerId' });
-    }
+    console.log(`[Subscribe] Subscribe request received for street ${streetId}`);
+    console.log(`[Subscribe] Notifications temporarily disabled during platform transition`);
 
-    // Sanitize inputs
-    const sanitizedStreetId = streetId.trim();
-    const sanitizedPlayerId = playerId.trim();
-
-    console.log(`[Subscribe] Attempting to subscribe player ${sanitizedPlayerId} to street ${sanitizedStreetId}`);
-
-    // Check for existing subscription
-    const checkUrl = new URL(`https://api.airtable.com/v0/${BASE_ID}/${SUBSCRIPTIONS_TABLE_ID}`);
-    checkUrl.searchParams.set('filterByFormula', `AND({Street Record ID}='${sanitizedStreetId}',{OneSignal Player ID}='${sanitizedPlayerId}')`);
-
-    const checkResponse = await fetch(checkUrl, {
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
-      },
-    });
-
-    if (!checkResponse.ok) {
-      throw new Error(`Failed to check existing subscriptions (status ${checkResponse.status})`);
-    }
-
-    const existingRecords = await checkResponse.json();
-
-    // If subscription already exists, return success
-    if (existingRecords.records && existingRecords.records.length > 0) {
-      console.log(`[Subscribe] Subscription already exists for player ${sanitizedPlayerId} on street ${sanitizedStreetId}`);
-      return res.status(200).json({ 
-        success: true, 
-        message: 'Already subscribed',
-        subscriptionId: existingRecords.records[0].id 
-      });
-    }
-
-    // Create new subscription
-    const createUrl = `https://api.airtable.com/v0/${BASE_ID}/${SUBSCRIPTIONS_TABLE_ID}`;
-    const createResponse = await fetch(createUrl, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        fields: {
-          'Street Record ID': [sanitizedStreetId], // Link field (array of record IDs)
-          'OneSignal Player ID': sanitizedPlayerId,
-        },
-      }),
-    });
-
-    if (!createResponse.ok) {
-      const errorText = await createResponse.text();
-      console.error(`[Subscribe] Airtable API error (${createResponse.status}):`, errorText);
-      throw new Error(`Failed to create subscription (status ${createResponse.status})`);
-    }
-
-    const newRecord = await createResponse.json();
-    console.log(`[Subscribe] Successfully created subscription ${newRecord.id} for player ${sanitizedPlayerId}`);
-
-    return res.status(201).json({ 
-      success: true, 
-      message: 'Subscription created',
-      subscriptionId: newRecord.id 
+    // Return success but don't actually create subscription
+    return res.status(200).json({ 
+      success: false, 
+      message: 'Notifications are currently being migrated to a new platform. Check back soon!',
+      temporarilyDisabled: true
     });
 
   } catch (error) {
     console.error('[Subscribe] Error:', error);
     return res.status(500).json({ 
-      error: 'Failed to create subscription',
+      error: 'Failed to process subscription request',
       details: error.message 
     });
   }

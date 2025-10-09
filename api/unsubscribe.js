@@ -1,6 +1,6 @@
 /**
  * Unsubscribe API Endpoint
- * Removes a user's subscription to push notifications for a specific street
+ * Note: Temporarily disabled during transition to new alerts platform
  */
 export default async function handler(req, res) {
   // Enable CORS
@@ -34,71 +34,20 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid or missing streetId' });
     }
 
-    if (!playerId || typeof playerId !== 'string') {
-      return res.status(400).json({ error: 'Invalid or missing playerId' });
-    }
+    console.log(`[Unsubscribe] Unsubscribe request received for street ${streetId}`);
+    console.log(`[Unsubscribe] Notifications temporarily disabled during platform transition`);
 
-    // Sanitize inputs
-    const sanitizedStreetId = streetId.trim();
-    const sanitizedPlayerId = playerId.trim();
-
-    console.log(`[Unsubscribe] Attempting to unsubscribe player ${sanitizedPlayerId} from street ${sanitizedStreetId}`);
-
-    // Find the subscription record
-    const findUrl = new URL(`https://api.airtable.com/v0/${BASE_ID}/${SUBSCRIPTIONS_TABLE_ID}`);
-    findUrl.searchParams.set('filterByFormula', `AND({Street Record ID}='${sanitizedStreetId}',{OneSignal Player ID}='${sanitizedPlayerId}')`);
-
-    const findResponse = await fetch(findUrl, {
-      headers: {
-        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
-      },
-    });
-
-    if (!findResponse.ok) {
-      throw new Error(`Failed to find subscription (status ${findResponse.status})`);
-    }
-
-    const records = await findResponse.json();
-
-    // If no subscription found, return success (idempotent)
-    if (!records.records || records.records.length === 0) {
-      console.log(`[Unsubscribe] No subscription found for player ${sanitizedPlayerId} on street ${sanitizedStreetId}`);
-      return res.status(200).json({ 
-        success: true, 
-        message: 'No subscription found (already unsubscribed)' 
-      });
-    }
-
-    // Delete all matching subscriptions (should only be one, but handle duplicates)
-    const deletePromises = records.records.map(async (record) => {
-      const deleteUrl = `https://api.airtable.com/v0/${BASE_ID}/${SUBSCRIPTIONS_TABLE_ID}/${record.id}`;
-      const deleteResponse = await fetch(deleteUrl, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${AIRTABLE_API_KEY}`,
-        },
-      });
-
-      if (!deleteResponse.ok) {
-        throw new Error(`Failed to delete subscription ${record.id} (status ${deleteResponse.status})`);
-      }
-
-      return deleteResponse.json();
-    });
-
-    await Promise.all(deletePromises);
-    console.log(`[Unsubscribe] Successfully deleted ${records.records.length} subscription(s) for player ${sanitizedPlayerId}`);
-
+    // Return success (idempotent behavior)
     return res.status(200).json({ 
       success: true, 
-      message: 'Unsubscribed successfully',
-      deletedCount: records.records.length 
+      message: 'Notifications are currently being migrated to a new platform.',
+      temporarilyDisabled: true
     });
 
   } catch (error) {
     console.error('[Unsubscribe] Error:', error);
     return res.status(500).json({ 
-      error: 'Failed to unsubscribe',
+      error: 'Failed to process unsubscribe request',
       details: error.message 
     });
   }
