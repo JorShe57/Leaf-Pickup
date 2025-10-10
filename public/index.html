@@ -1566,7 +1566,7 @@
     }
 
     /**
-     * HowToUse Component
+     * HowToUse Component - Modal Version
      * Displays onboarding guide for the three main features
      */
     function HowToUse({ isOpen, onClose }) {
@@ -1574,11 +1574,6 @@
 
       useEffect(() => {
         if (isOpen && contentRef.current) {
-          // Smooth scroll to the component when it opens
-          setTimeout(() => {
-            contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }, 100);
-          
           // Animate entrance with GSAP
           gsap.from(contentRef.current.querySelectorAll('.feature-card'), {
             opacity: 0.9,
@@ -1598,7 +1593,7 @@
           title: 'Find Your Street',
           description: 'Search and track your street\'s pickup status',
           steps: [
-            'Type your street name in the search bar below',
+            'Type your street name in the search bar',
             'Browse routes by tapping to expand route groups',
             'Tap any street to see detailed pickup status',
             'View start dates, completion dates, and notes'
@@ -1609,7 +1604,7 @@
           title: 'Analyze Your Collection',
           description: 'Get AI-powered feedback on your leaf collection',
           steps: [
-            'Tap the "Analyze Collection" button above',
+            'Tap the "Analyze Collection" button',
             'Take a photo or upload from your device',
             'Submit for instant AI analysis',
             'Receive compliance feedback and suggestions'
@@ -1629,66 +1624,71 @@
       ];
 
       return html`
-        <div 
-          ref=${contentRef}
-          className="bg-white rounded-2xl shadow-lg border border-green-200 p-4 md:p-6 mb-4"
-        >
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <span className="text-3xl mr-3">💡</span>
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold text-green-800">
-                  How to Use This App
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  Everything you need to track your leaf collection
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" style=${{ touchAction: 'none' }}>
+          <div 
+            ref=${contentRef}
+            className="bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto" 
+            style=${{ touchAction: 'pan-y' }}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
+              <div className="flex items-center">
+                <span className="text-2xl md:text-3xl mr-3">💡</span>
+                <div>
+                  <h3 className="text-lg md:text-xl font-semibold text-green-800">
+                    How to Use This App
+                  </h3>
+                  <p className="text-xs md:text-sm text-gray-600 mt-1">
+                    Everything you need to track your leaf collection
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick=${onClose}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                aria-label="Close help guide"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-4 md:p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                ${features.map((feature, index) => html`
+                  <div 
+                    key=${feature.title}
+                    className="feature-card bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 md:p-6 border border-green-200 shadow-sm"
+                  >
+                    <div className="text-center mb-4">
+                      <span className="text-3xl md:text-4xl mb-3 block">${feature.icon}</span>
+                      <h3 className="text-base md:text-lg font-bold text-gray-900 mb-2">
+                        ${index + 1}. ${feature.title}
+                      </h3>
+                      <p className="text-xs md:text-sm text-gray-600 leading-relaxed">
+                        ${feature.description}
+                      </p>
+                    </div>
+                    <div className="space-y-2 md:space-y-3">
+                      ${feature.steps.map((step, stepIndex) => html`
+                        <div key=${stepIndex} className="flex items-start space-x-2 md:space-x-3">
+                          <span className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 bg-green-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                            ${stepIndex + 1}
+                          </span>
+                          <p className="text-xs md:text-sm text-gray-700 leading-relaxed">${step}</p>
+                        </div>
+                      `)}
+                    </div>
+                  </div>
+                `)}
+              </div>
+
+              <div className="mt-6 text-center bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-xs md:text-sm text-blue-700">
+                  💡 <strong>Tip:</strong> You can access this guide anytime by tapping the "How to Use" button
                 </p>
               </div>
             </div>
-            <button
-              onClick=${onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors p-3 rounded-lg hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label="Close help guide"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            ${features.map((feature, index) => html`
-              <div 
-                key=${feature.title}
-                className="feature-card bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200 shadow-sm"
-              >
-                <div className="text-center mb-4">
-                  <span className="text-4xl mb-3 block">${feature.icon}</span>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
-                    ${index + 1}. ${feature.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    ${feature.description}
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  ${feature.steps.map((step, stepIndex) => html`
-                    <div key=${stepIndex} className="flex items-start space-x-3">
-                      <span className="flex-shrink-0 w-6 h-6 bg-green-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                        ${stepIndex + 1}
-                      </span>
-                      <p className="text-sm text-gray-700 leading-relaxed">${step}</p>
-                    </div>
-                  `)}
-                </div>
-              </div>
-            `)}
-          </div>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-500">
-              💡 <strong>Tip:</strong> This guide is always accessible by tapping the "How to Use" button above
-            </p>
           </div>
         </div>
       `;
@@ -2355,11 +2355,11 @@
                   Analyze Collection
                 </button>
                 <button
-                  onClick=${() => setShowOnboarding(!showOnboarding)}
+                  onClick=${() => setShowOnboarding(true)}
                   className="bg-green-600 text-white px-6 py-3 min-h-[48px] rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center"
                 >
                   <span className="mr-2">💡</span>
-                  ${showOnboarding ? 'Hide' : 'How to Use'}
+                  How to Use
                 </button>
               </div>
               <p className="text-sm text-gray-500">
@@ -2370,8 +2370,6 @@
 
           <${ActiveCrews} />
           <${UpNextRoutes} />
-
-          <${HowToUse} isOpen=${showOnboarding} onClose=${() => setShowOnboarding(false)} />
 
           <${ServiceMessages} />
 
@@ -2401,6 +2399,7 @@
         
         <${RouteModal} record=${modalRecord} isOpen=${isModalOpen} onClose=${closeModal} />
         <${CameraAnalysisModal} isOpen=${showAnalyzerModal} onClose=${() => setShowAnalyzerModal(false)} />
+        <${HowToUse} isOpen=${showOnboarding} onClose=${() => setShowOnboarding(false)} />
         <${InstallPrompt} />
       </div>`;
     }
