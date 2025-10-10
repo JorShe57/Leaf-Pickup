@@ -1505,6 +1505,130 @@
     }
 
     /**
+     * HowToUse Component
+     * Displays onboarding guide for the three main features
+     */
+    function HowToUse({ isOpen, onClose }) {
+      const contentRef = React.useRef(null);
+
+      useEffect(() => {
+        if (isOpen && contentRef.current) {
+          // Smooth scroll to the component when it opens
+          contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          
+          // Animate entrance with GSAP
+          gsap.from(contentRef.current.querySelectorAll('.feature-card'), {
+            opacity: 0,
+            y: 20,
+            duration: 0.4,
+            stagger: 0.1,
+            ease: 'power2.out'
+          });
+        }
+      }, [isOpen]);
+
+      if (!isOpen) return null;
+
+      const features = [
+        {
+          icon: '🔍',
+          title: 'Find Your Street',
+          steps: [
+            'Use the search bar to type your street name',
+            'Browse routes by expanding route groups',
+            'Tap any street to see detailed pickup status',
+            'View dates started, completed, and any special notes'
+          ]
+        },
+        {
+          icon: '📸',
+          title: 'Analyze Your Pile',
+          steps: [
+            'Tap "Analyze My Pile" to open the camera tool',
+            'Take or upload a photo of your leaf pile',
+            'Submit for AI-powered compliance analysis',
+            'Get instant feedback and suggestions for proper collection'
+          ]
+        },
+        {
+          icon: '📧',
+          title: 'Get Email Alerts',
+          steps: [
+            'Search for and select your street',
+            'Scroll to the "Get Email Alerts" section',
+            'Enter your name and email address',
+            'Receive automatic updates when your street\'s status changes'
+          ]
+        }
+      ];
+
+      return html`
+        <div 
+          ref=${contentRef}
+          className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-blue-200 p-4 md:p-6 mb-4"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <span className="text-2xl mr-2">💡</span>
+              <h2 className="text-xl md:text-2xl font-bold text-green-800">
+                How to Use This App
+              </h2>
+            </div>
+            <button
+              onClick=${onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Close help"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <p className="text-sm md:text-base text-gray-600 mb-6">
+            Welcome! Here's everything you need to know to track your leaf collection.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            ${features.map((feature, index) => html`
+              <div 
+                key=${feature.title}
+                className="feature-card bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-4 md:p-5 border border-green-200 card-hover"
+              >
+                <div className="flex items-center mb-3">
+                  <span className="text-3xl mr-3">${feature.icon}</span>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    ${index + 1}. ${feature.title}
+                  </h3>
+                </div>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  ${feature.steps.map(step => html`
+                    <li key=${step} className="flex items-start">
+                      <span className="text-green-600 mr-2 mt-0.5">•</span>
+                      <span className="flex-1">${step}</span>
+                    </li>
+                  `)}
+                </ul>
+              </div>
+            `)}
+          </div>
+
+          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800 flex items-start">
+              <span className="text-xl mr-2">ℹ️</span>
+              <span className="flex-1">
+                <strong>Need more help?</strong> Contact the Westlake Service Department at 
+                <a href="mailto:jshevel@cityofwestlake.org" className="text-blue-600 hover:text-blue-700 underline ml-1">
+                  jshevel@cityofwestlake.org
+                </a>
+              </span>
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    /**
      * ServiceMessages Component
      * Displays messages from the service department fetched from Airtable
      */
@@ -1621,6 +1745,7 @@
       const [modalRecord, setModalRecord] = useState(null);
       const [isModalOpen, setIsModalOpen] = useState(false);
       const [expandedRoutes, setExpandedRoutes] = useState(new Set());
+      const [showOnboarding, setShowOnboarding] = useState(false);
 
       useEffect(() => {
         let isMounted = true;
@@ -1858,11 +1983,21 @@
         <div className="mx-auto flex max-w-6xl flex-col gap-4 md:gap-8 app-content">
           <header className="text-center">
             <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-4 md:p-8 border border-green-200">
-              <div className="flex items-center justify-center mb-3 md:mb-4">
+              <div className="flex items-center justify-center mb-3 md:mb-4 relative">
                 <div className="text-3xl md:text-4xl mr-2 md:mr-3">🍂</div>
                 <h1 className="text-2xl md:text-4xl font-bold text-green-800">
                   Westlake Leaf Collection Tracker
                 </h1>
+                <button
+                  onClick=${() => setShowOnboarding(!showOnboarding)}
+                  className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-green-600 hover:bg-green-700 text-white rounded-full min-h-[44px] min-w-[44px] flex items-center justify-center transition-all shadow-md hover:shadow-lg"
+                  aria-label="Toggle help guide"
+                  title="How to use this app"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </button>
               </div>
               <p className="text-base md:text-lg text-gray-600 mb-3 md:mb-4">
                 Search your street to see the latest pickup status
@@ -1881,6 +2016,8 @@
               </p>
             </div>
           </header>
+
+          <${HowToUse} isOpen=${showOnboarding} onClose=${() => setShowOnboarding(false)} />
 
           <${ServiceMessages} />
 
