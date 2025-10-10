@@ -1016,8 +1016,8 @@
       `;
     }
 
-    // Camera Analysis Component (file upload to n8n workflow)
-    function CameraAnalysis() {
+    // Camera Analysis Modal Component (file upload to n8n workflow)
+    function CameraAnalysisModal({ isOpen, onClose }) {
       const [selectedFile, setSelectedFile] = useState(null);
       const [previewUrl, setPreviewUrl] = useState(null);
       const [analysisResult, setAnalysisResult] = useState(null);
@@ -1236,26 +1236,42 @@
         }
       };
 
+      if (!isOpen) return null;
+
       return html`
-        <div className="space-y-6">
-          <div className="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-lg border border-blue-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-              <span className="mr-2">📸</span>
-              Collection Pile Analysis
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Snap a photo of your leaf pile and upload it. Our n8n automation will review the image and send back guidance.
-            </p>
-            
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-gray-700">Collection Guidelines:</h4>
-              <ul className="text-xs text-gray-600 space-y-1">
-                ${complianceGuidelines.map(guideline => html`
-                  <li key=${guideline}>${guideline}</li>
-                `)}
-              </ul>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" style=${{ touchAction: 'none' }}>
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style=${{ touchAction: 'pan-y' }}>
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                <span className="mr-2">📸</span>
+                Collection Analysis
+              </h3>
+              <button
+                onClick=${onClose}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                aria-label="Close analysis"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
             </div>
-          </div>
+            
+            <div className="p-4 space-y-6">
+              <div className="bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg border border-blue-200">
+                <p className="text-sm text-gray-600 mb-4">
+                  Snap a photo of your leaf collection and upload it. Our AI will review the image and provide compliance guidance.
+                </p>
+                
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-gray-700">Collection Guidelines:</h4>
+                  <ul className="text-xs text-gray-600 space-y-1">
+                    ${complianceGuidelines.map(guideline => html`
+                      <li key=${guideline}>${guideline}</li>
+                    `)}
+                  </ul>
+                </div>
+              </div>
 
           ${error && html`
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -1414,6 +1430,8 @@
               </div>
             `;
           })()}
+            </div>
+          </div>
         </div>
       `;
     }
@@ -1545,10 +1563,10 @@
         },
         {
           icon: '📸',
-          title: 'Analyze Your Pile',
-          description: 'Get AI-powered feedback on your leaf pile',
+          title: 'Analyze Your Collection',
+          description: 'Get AI-powered feedback on your leaf collection',
           steps: [
-            'Tap the "Analyze My Pile" button above',
+            'Tap the "Analyze Collection" button above',
             'Take a photo or upload from your device',
             'Submit for instant AI analysis',
             'Receive compliance feedback and suggestions'
@@ -1746,7 +1764,7 @@
       const [searchTerm, setSearchTerm] = useState('');
       const [activeId, setActiveId] = useState(null);
       const [sortBy, setSortBy] = useState('street');
-      const [showAnalyzer, setShowAnalyzer] = useState(false);
+      const [showAnalyzerModal, setShowAnalyzerModal] = useState(false);
       const [modalRecord, setModalRecord] = useState(null);
       const [isModalOpen, setIsModalOpen] = useState(false);
       const [expandedRoutes, setExpandedRoutes] = useState(new Set());
@@ -1999,11 +2017,11 @@
               </p>
               <div className="flex gap-3 justify-center mb-2 flex-wrap">
                 <button
-                  onClick=${() => setShowAnalyzer(!showAnalyzer)}
+                  onClick=${() => setShowAnalyzerModal(true)}
                   className="bg-blue-600 text-white px-6 py-3 min-h-[48px] rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center"
                 >
                   <span className="mr-2">📸</span>
-                  ${showAnalyzer ? 'Hide' : 'Analyze'} My Pile
+                  Analyze Collection
                 </button>
                 <button
                   onClick=${() => setShowOnboarding(!showOnboarding)}
@@ -2022,12 +2040,6 @@
           <${HowToUse} isOpen=${showOnboarding} onClose=${() => setShowOnboarding(false)} />
 
           <${ServiceMessages} />
-
-          ${showAnalyzer ? html`
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
-              <${CameraAnalysis} />
-            </div>
-          ` : null}
 
           <main className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
             <div className="bg-gradient-to-r from-green-600 to-green-700 px-4 md:px-6 py-3 md:py-4">
@@ -2054,6 +2066,7 @@
         </div>
         
         <${RouteModal} record=${modalRecord} isOpen=${isModalOpen} onClose=${closeModal} />
+        <${CameraAnalysisModal} isOpen=${showAnalyzerModal} onClose=${() => setShowAnalyzerModal(false)} />
         <${InstallPrompt} />
       </div>`;
     }
