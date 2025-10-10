@@ -6,11 +6,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/public/index.html",
-      "missing": [
-        { "type": "file" },
-        { "type": "route" }
-      ]
+      "destination": "/public/index.html"
     }
   ],
   "headers": [
@@ -66,7 +62,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://api.airtable.com https://unpkg.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://api.airtable.com https://unpkg.com https://cdn.tailwindcss.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
         },
         {
           "key": "Referrer-Policy",

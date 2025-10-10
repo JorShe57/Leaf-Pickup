@@ -3,7 +3,7 @@
  * Provides offline support and caching for PWA functionality
  */
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v1';
 const CACHE_NAME = `leaf-tracker-${CACHE_VERSION}`;
 const API_CACHE = `leaf-tracker-api-${CACHE_VERSION}`;
 
@@ -12,13 +12,12 @@ const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/assets/tailwind.css',
   '/images/sebastian-volkel-7QT_puk5CJQ-unsplash.jpg.webp',
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
+  'https://cdn.tailwindcss.com',
   'https://unpkg.com/htm@3.1.1/dist/htm.umd.js',
-  'https://unpkg.com/gsap@3.12.2/dist/gsap.min.js',
-  'https://unpkg.com/dompurify@3.0.6/dist/purify.min.js'
+  'https://unpkg.com/gsap@3.12.2/dist/gsap.min.js'
 ];
 
 // Install event - cache static assets
