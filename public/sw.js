@@ -3,21 +3,17 @@
  * Provides offline support and caching for PWA functionality
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `leaf-tracker-${CACHE_VERSION}`;
 const API_CACHE = `leaf-tracker-api-${CACHE_VERSION}`;
 
-// Assets to cache on install
+// Assets to cache on install (only same-origin assets)
+// External CDN resources are NOT cached to avoid CORS issues
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/images/sebastian-volkel-7QT_puk5CJQ-unsplash.jpg.webp',
-  'https://unpkg.com/react@18/umd/react.production.min.js',
-  'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
-  'https://cdn.tailwindcss.com',
-  'https://unpkg.com/htm@3.1.1/dist/htm.umd.js',
-  'https://unpkg.com/gsap@3.12.2/dist/gsap.min.js'
+  '/images/sebastian-volkel-7QT_puk5CJQ-unsplash.jpg.webp'
 ];
 
 // Install event - cache static assets
@@ -72,6 +68,13 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
+  
+  // IMPORTANT: Skip external CDN requests - let browser handle them directly
+  // This prevents CORS issues and allows external resources to load normally
+  if (url.origin !== self.location.origin) {
+    // Let the browser handle all cross-origin requests without service worker interference
+    return;
+  }
   
   // Handle API requests (network first, fallback to cache)
   if (url.pathname.startsWith('/api/')) {
