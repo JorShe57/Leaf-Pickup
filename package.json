@@ -1,0 +1,11 @@
+{
+  "name": "leaf-pickup",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./styles/tailwind.css -o ./public/assets/tailwind.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.6"
+  }
+}
