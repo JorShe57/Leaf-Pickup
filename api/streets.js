@@ -1,4 +1,6 @@
-export default async function handler(req, res) {
+import { withRateLimit, RATE_LIMITS } from './_rate-limiter.js';
+
+async function handler(req, res) {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -63,3 +65,6 @@ export default async function handler(req, res) {
       res.status(500).json({ error: 'Failed to fetch street data' });
     }
   }
+
+// Export handler with rate limiting (100 requests/hour)
+export default withRateLimit(handler, RATE_LIMITS.READ);

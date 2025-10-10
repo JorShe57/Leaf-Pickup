@@ -1,4 +1,6 @@
-export default async function handler(req, res) {
+import { withRateLimit, RATE_LIMITS } from './_rate-limiter.js';
+
+async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -393,3 +395,6 @@ function humanizeKey(value) {
 
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
+
+// Export handler with rate limiting (30 requests/hour)
+export default withRateLimit(handler, RATE_LIMITS.ANALYSIS);

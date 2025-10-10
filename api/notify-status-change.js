@@ -3,7 +3,9 @@
  * SECURITY CRITICAL: Receives webhooks from Airtable when street status changes
  * Note: Push notification functionality removed - transitioning to new alerts platform
  */
-export default async function handler(req, res) {
+import { withRateLimit, RATE_LIMITS } from './_rate-limiter.js';
+
+async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -103,3 +105,5 @@ export default async function handler(req, res) {
   }
 }
 
+// Export handler with rate limiting (50 requests/hour)
+export default withRateLimit(handler, RATE_LIMITS.WEBHOOK);

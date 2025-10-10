@@ -2,7 +2,9 @@
  * Email Alert Subscription API Endpoint
  * Handles email alert subscriptions for leaf pickup status updates
  */
-export default async function handler(req, res) {
+import { withRateLimit, RATE_LIMITS } from './_rate-limiter.js';
+
+async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -91,3 +93,5 @@ export default async function handler(req, res) {
   }
 }
 
+// Export handler with rate limiting (20 requests/hour)
+export default withRateLimit(handler, RATE_LIMITS.SUBSCRIPTION);
