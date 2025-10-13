@@ -427,6 +427,10 @@
       }
 
       const normalized = value.trim().toLowerCase();
+      
+      // Debug logging to help troubleshoot
+      console.log('normalizeStatus input:', { original: value, trimmed: value.trim(), lowercased: normalized });
+      
       switch (normalized) {
         case 'not started':
           return 'Not Started';
@@ -463,6 +467,7 @@
         case 'complete':
           return 'Completed';
         default:
+          console.log('normalizeStatus: No match found for:', normalized);
           return value;
       }
     }
@@ -483,6 +488,11 @@
         'inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border';
       const variant = statusStyles[label] ?? 'bg-gray-100 text-gray-700 border-gray-300';
       const icon = statusIcons[label] ?? '❓';
+
+      // Debug logging to help troubleshoot
+      if (label === 'Unknown' && status !== 'Unknown') {
+        console.log('StatusBadge: Unknown status detected:', { original: status, normalized: label });
+      }
 
       return html`<span className="${baseClasses} ${variant}">
         <span className="mr-2 text-base">${icon}</span>
@@ -2167,7 +2177,10 @@
 
             const payload = await response.json();
             if (isMounted) {
-              setRecords(Array.isArray(payload.records) ? payload.records : []);
+              const records = Array.isArray(payload.records) ? payload.records : [];
+              // Debug logging to see what statuses we're getting
+              console.log('Sample records with statuses:', records.slice(0, 5).map(r => ({ street: r.street, status: r.status })));
+              setRecords(records);
             }
           } catch (err) {
             console.error(err);
