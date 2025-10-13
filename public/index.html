@@ -401,6 +401,11 @@
       'Not Started': 'bg-gray-100 text-gray-700 border-gray-300',
       'Up Next': 'bg-blue-100 text-blue-800 border-blue-300',
       'In Progress': 'bg-yellow-100 text-yellow-800 border-yellow-300 status-pulse',
+      'Completed 1st Pass': 'bg-green-100 text-green-800 border-green-300',
+      'Completed 2nd Pass': 'bg-emerald-100 text-emerald-800 border-emerald-300',
+      'Completed 3rd Pass': 'bg-teal-100 text-teal-800 border-teal-300',
+      'Completed 4th Pass': 'bg-cyan-100 text-cyan-800 border-cyan-300',
+      // Legacy support - keeping old "Completed" for backward compatibility
       Completed: 'bg-green-100 text-green-800 border-green-300',
     };
 
@@ -408,6 +413,11 @@
       'Not Started': '⏳',
       'Up Next': '🔜',
       'In Progress': '🔄',
+      'Completed 1st Pass': '✅',
+      'Completed 2nd Pass': '✅✅',
+      'Completed 3rd Pass': '✅✅✅',
+      'Completed 4th Pass': '✅✅✅✅',
+      // Legacy support
       Completed: '✅',
     };
 
@@ -429,12 +439,42 @@
         case 'in progess':
         case 'in proggress':
           return 'In Progress';
+        case 'completed 1st pass':
+        case 'completed first pass':
+        case '1st pass':
+        case 'first pass':
+          return 'Completed 1st Pass';
+        case 'completed 2nd pass':
+        case 'completed second pass':
+        case '2nd pass':
+        case 'second pass':
+          return 'Completed 2nd Pass';
+        case 'completed 3rd pass':
+        case 'completed third pass':
+        case '3rd pass':
+        case 'third pass':
+          return 'Completed 3rd Pass';
+        case 'completed 4th pass':
+        case 'completed fourth pass':
+        case '4th pass':
+        case 'fourth pass':
+          return 'Completed 4th Pass';
         case 'completed':
         case 'complete':
           return 'Completed';
         default:
           return value;
       }
+    }
+
+    // Helper function to check if a status is any type of completed status
+    function isCompletedStatus(status) {
+      const normalized = normalizeStatus(status);
+      return normalized === 'Completed' || 
+             normalized === 'Completed 1st Pass' || 
+             normalized === 'Completed 2nd Pass' || 
+             normalized === 'Completed 3rd Pass' || 
+             normalized === 'Completed 4th Pass';
     }
 
     function StatusBadge({ status = 'Unknown' }) {
@@ -1498,7 +1538,7 @@
      * Displays a collapsible group of streets for a single route
      */
     function CollapsibleRoute({ routeNumber, records, isExpanded, onToggle, onStreetClick }) {
-      const completedCount = records.filter(r => normalizeStatus(r.status) === 'Completed').length;
+      const completedCount = records.filter(r => isCompletedStatus(r.status)).length;
       const totalCount = records.length;
       const completionPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
       
@@ -2156,11 +2196,20 @@
         return filtered.sort((a, b) => {
           switch (sortBy) {
             case 'status':
-              const statusOrder = { 'Not Started': 0, 'In Progress': 1, 'Completed': 2 };
+              const statusOrder = { 
+                'Not Started': 0, 
+                'Up Next': 1,
+                'In Progress': 2, 
+                'Completed 1st Pass': 3,
+                'Completed 2nd Pass': 4,
+                'Completed 3rd Pass': 5,
+                'Completed 4th Pass': 6,
+                'Completed': 7
+              };
               const aStatus = normalizeStatus(a.status || 'Unknown');
               const bStatus = normalizeStatus(b.status || 'Unknown');
-              const aOrder = statusOrder[aStatus] ?? 3;
-              const bOrder = statusOrder[bStatus] ?? 3;
+              const aOrder = statusOrder[aStatus] ?? 999;
+              const bOrder = statusOrder[bStatus] ?? 999;
               if (aOrder !== bOrder) return aOrder - bOrder;
               return a.street.localeCompare(b.street);
             case 'route':
@@ -2325,7 +2374,7 @@
                 ${routeGroups.length} ${routeGroups.length === 1 ? 'route' : 'routes'} • ${filteredRecords.length} ${filteredRecords.length === 1 ? 'street' : 'streets'}
               </span>
               ${filteredRecords.length > 0 ? html`<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                ${filteredRecords.filter(r => normalizeStatus(r.status) === 'Completed').length} completed
+                ${filteredRecords.filter(r => isCompletedStatus(r.status)).length} completed
               </span>` : null}
             </div>
             ${searchTerm

@@ -59,9 +59,27 @@ async function handler(req, res) {
       if (!status) return null;
       const normalized = status.trim().toLowerCase();
       if (normalized === 'not started') return 'Not Started';
+      if (normalized === 'up next' || normalized === 'upnext' || normalized === 'up-next') return 'Up Next';
       if (normalized === 'in progress' || normalized === 'in-progress') return 'In Progress';
+      if (normalized === 'completed 1st pass' || normalized === 'completed first pass' || 
+          normalized === '1st pass' || normalized === 'first pass') return 'Completed 1st Pass';
+      if (normalized === 'completed 2nd pass' || normalized === 'completed second pass' || 
+          normalized === '2nd pass' || normalized === 'second pass') return 'Completed 2nd Pass';
+      if (normalized === 'completed 3rd pass' || normalized === 'completed third pass' || 
+          normalized === '3rd pass' || normalized === 'third pass') return 'Completed 3rd Pass';
+      if (normalized === 'completed 4th pass' || normalized === 'completed fourth pass' || 
+          normalized === '4th pass' || normalized === 'fourth pass') return 'Completed 4th Pass';
       if (normalized === 'completed' || normalized === 'complete') return 'Completed';
       return status;
+    };
+
+    // Helper to check if status is any type of completed
+    const isCompletedStatus = (status) => {
+      return status === 'Completed' || 
+             status === 'Completed 1st Pass' || 
+             status === 'Completed 2nd Pass' || 
+             status === 'Completed 3rd Pass' || 
+             status === 'Completed 4th Pass';
     };
 
     const oldStatusNormalized = normalizeStatus(old_status);
@@ -70,7 +88,8 @@ async function handler(req, res) {
     // Check if this status change requires notification
     const shouldNotify = 
       (oldStatusNormalized === 'Not Started' && newStatusNormalized === 'In Progress') ||
-      (oldStatusNormalized === 'In Progress' && newStatusNormalized === 'Completed');
+      (oldStatusNormalized === 'In Progress' && isCompletedStatus(newStatusNormalized)) ||
+      (oldStatusNormalized === 'Up Next' && newStatusNormalized === 'In Progress');
 
     if (!shouldNotify) {
       console.log(`[Notify] Status change ${oldStatusNormalized} → ${newStatusNormalized} does not require notification`);
