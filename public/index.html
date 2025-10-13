@@ -954,7 +954,21 @@
         return '--';
       }
 
-      const parsed = new Date(value);
+      // Handle date strings more explicitly to avoid timezone issues
+      let parsed;
+      if (typeof value === 'string') {
+        // If it's in MM/DD/YYYY format, parse it more carefully
+        if (value.includes('/')) {
+          const [month, day, year] = value.split('/');
+          // Create date in local timezone to avoid UTC conversion
+          parsed = new Date(year, month - 1, day);
+        } else {
+          parsed = new Date(value);
+        }
+      } else {
+        parsed = new Date(value);
+      }
+
       if (Number.isNaN(parsed.getTime())) {
         return value;
       }
