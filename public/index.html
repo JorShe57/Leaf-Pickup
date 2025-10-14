@@ -1007,8 +1007,14 @@
       // Handle date strings more explicitly to avoid timezone issues
       let parsed;
       if (typeof value === 'string') {
+        // If it's in ISO date format (YYYY-MM-DD), parse it in local timezone
+        if (/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/.test(value)) {
+          const [year, month, day] = value.split('T')[0].split('-');
+          // Create date in local timezone to avoid UTC conversion
+          parsed = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+        }
         // If it's in MM/DD/YYYY format, parse it more carefully
-        if (value.includes('/')) {
+        else if (value.includes('/')) {
           const [month, day, year] = value.split('/');
           // Create date in local timezone to avoid UTC conversion
           parsed = new Date(year, month - 1, day);
