@@ -414,9 +414,9 @@
       'Up Next': '🔜',
       'In Progress': '🔄',
       'Completed 1st Pass': '✅',
-      'Completed 2nd Pass': '✅✅',
-      'Completed 3rd Pass': '✅✅✅',
-      'Completed 4th Pass': '✅✅✅✅',
+      'Completed 2nd Pass': '✅',
+      'Completed 3rd Pass': '✅',
+      'Completed 4th Pass': '✅',
       // Legacy support
       Completed: '✅',
     };
@@ -483,19 +483,31 @@
     }
 
     function StatusBadge({ status = 'Unknown' }) {
-      const label = normalizeStatus(status);
+      const normalizedStatus = normalizeStatus(status);
+      
+      // Map to abbreviated labels with single checkmark for completed passes
+      const abbreviatedLabels = {
+        'Not Started': 'Not Started',
+        'Up Next': 'Up Next', 
+        'In Progress': 'In Progress',
+        'Completed 1st Pass': '1st Pass ✅',
+        'Completed 2nd Pass': '2nd Pass ✅',
+        'Completed 3rd Pass': '3rd Pass ✅',
+        'Completed 4th Pass': '4th Pass ✅',
+        'Completed': 'Complete ✅'
+      };
+      
+      const label = abbreviatedLabels[normalizedStatus] ?? normalizedStatus;
       const baseClasses =
-        'inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border';
-      const variant = statusStyles[label] ?? 'bg-gray-100 text-gray-700 border-gray-300';
-      const icon = statusIcons[label] ?? '❓';
+        'inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border whitespace-nowrap';
+      const variant = statusStyles[normalizedStatus] ?? 'bg-gray-100 text-gray-700 border-gray-300';
 
       // Debug logging to help troubleshoot
-      if (label === 'Unknown' && status !== 'Unknown') {
-        console.log('StatusBadge: Unknown status detected:', { original: status, normalized: label });
+      if (normalizedStatus === 'Unknown' && status !== 'Unknown') {
+        console.log('StatusBadge: Unknown status detected:', { original: status, normalized: normalizedStatus });
       }
 
       return html`<span className="${baseClasses} ${variant}">
-        <span className="mr-2 text-base">${icon}</span>
         ${label}
       </span>`;
     }
