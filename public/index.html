@@ -1572,11 +1572,14 @@
       
       // Determine overall route status
       const inProgressCount = records.filter(r => normalizeStatus(r.status) === 'In Progress').length;
+      const upNextCount = records.filter(r => normalizeStatus(r.status) === 'Up Next').length;
       let routeStatus = 'Not Started';
       if (completedCount === totalCount) {
         routeStatus = 'Completed';
       } else if (completedCount > 0 || inProgressCount > 0) {
         routeStatus = 'In Progress';
+      } else if (upNextCount > 0) {
+        routeStatus = 'Up Next';
       }
 
       return html`
