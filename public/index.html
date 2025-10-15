@@ -2697,6 +2697,33 @@
           </main>
         </div>
         
+        <footer className="mt-8 pt-6 border-t border-gray-200">
+          <div className="text-center text-sm text-gray-600">
+            <p className="mb-2">
+              © 2024 City of Westlake, OH. All rights reserved.
+            </p>
+            <div className="flex justify-center space-x-4">
+              <a 
+                href="privacy-policy.html" 
+                className="text-green-600 hover:text-green-700 underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Privacy Policy
+              </a>
+              <span className="text-gray-400">•</span>
+              <a 
+                href="terms-of-service.html" 
+                className="text-green-600 hover:text-green-700 underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Terms of Service
+              </a>
+            </div>
+          </div>
+        </footer>
+        
         <${RouteModal} record=${modalRecord} isOpen=${isModalOpen} onClose=${closeModal} />
         <${CameraAnalysisModal} isOpen=${showAnalyzerModal} onClose=${() => setShowAnalyzerModal(false)} />
         <${HowToUse} isOpen=${showOnboarding} onClose=${() => setShowOnboarding(false)} />
