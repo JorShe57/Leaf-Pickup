@@ -400,7 +400,13 @@
     const statusStyles = {
       'Not Started': 'bg-gray-100 text-gray-700 border-gray-300',
       'Up Next': 'bg-blue-100 text-blue-800 border-blue-300',
+      'Up Next- 2nd Pass': 'bg-indigo-100 text-indigo-800 border-indigo-300',
+      'Up Next- 3rd Pass': 'bg-purple-100 text-purple-800 border-purple-300',
+      'Up Next- 4th Pass': 'bg-violet-100 text-violet-800 border-violet-300',
       'In Progress': 'bg-yellow-100 text-yellow-800 border-yellow-300 status-pulse',
+      'In Progress 2nd Pass': 'bg-orange-100 text-orange-800 border-orange-300 status-pulse',
+      'In Progress 3rd Pass': 'bg-amber-100 text-amber-800 border-amber-300 status-pulse',
+      'In Progress 4th Pass': 'bg-lime-100 text-lime-800 border-lime-300 status-pulse',
       'Completed 1st Pass': 'bg-green-100 text-green-800 border-green-300',
       'Completed 2nd Pass': 'bg-emerald-100 text-emerald-800 border-emerald-300',
       'Completed 3rd Pass': 'bg-teal-100 text-teal-800 border-teal-300',
@@ -412,7 +418,13 @@
     const statusIcons = {
       'Not Started': '⏳',
       'Up Next': '🔜',
+      'Up Next- 2nd Pass': '🔜',
+      'Up Next- 3rd Pass': '🔜',
+      'Up Next- 4th Pass': '🔜',
       'In Progress': '🔄',
+      'In Progress 2nd Pass': '🔄',
+      'In Progress 3rd Pass': '🔄',
+      'In Progress 4th Pass': '🔄',
       'Completed 1st Pass': '✅',
       'Completed 2nd Pass': '✅',
       'Completed 3rd Pass': '✅',
@@ -438,11 +450,41 @@
         case 'upnext':
         case 'up-next':
           return 'Up Next';
+        case 'up next- 2nd pass':
+        case 'up next- 2nd':
+        case 'up next 2nd pass':
+        case 'up next 2nd':
+          return 'Up Next- 2nd Pass';
+        case 'up next- 3rd pass':
+        case 'up next- 3rd':
+        case 'up next 3rd pass':
+        case 'up next 3rd':
+          return 'Up Next- 3rd Pass';
+        case 'up next- 4th pass':
+        case 'up next- 4th':
+        case 'up next 4th pass':
+        case 'up next 4th':
+          return 'Up Next- 4th Pass';
         case 'in progress':
         case 'in-progress':
         case 'in progess':
         case 'in proggress':
           return 'In Progress';
+        case 'in progress 2nd pass':
+        case 'in progress 2nd':
+        case 'in-progress 2nd pass':
+        case 'in-progress 2nd':
+          return 'In Progress 2nd Pass';
+        case 'in progress 3rd pass':
+        case 'in progress 3rd':
+        case 'in-progress 3rd pass':
+        case 'in-progress 3rd':
+          return 'In Progress 3rd Pass';
+        case 'in progress 4th pass':
+        case 'in progress 4th':
+        case 'in-progress 4th pass':
+        case 'in-progress 4th':
+          return 'In Progress 4th Pass';
         case 'completed 1st pass':
         case 'completed first pass':
         case '1st pass':
@@ -488,13 +530,19 @@
       // Map to abbreviated labels with single checkmark for completed passes
       const abbreviatedLabels = {
         'Not Started': 'Not Started',
-        'Up Next': 'Up Next', 
+        'Up Next': 'Up Next',
+        'Up Next- 2nd Pass': 'Up Next 2nd',
+        'Up Next- 3rd Pass': 'Up Next 3rd',
+        'Up Next- 4th Pass': 'Up Next 4th',
         'In Progress': 'In Progress',
+        'In Progress 2nd Pass': 'In Progress 2nd',
+        'In Progress 3rd Pass': 'In Progress 3rd',
+        'In Progress 4th Pass': 'In Progress 4th',
         'Completed 1st Pass': '1st Pass ✅',
         'Completed 2nd Pass': '2nd Pass ✅',
         'Completed 3rd Pass': '3rd Pass ✅',
         'Completed 4th Pass': '4th Pass ✅',
-        'Completed': '1st Pass ✅'
+        'Completed': 'Completed ✅'
       };
       
       const label = abbreviatedLabels[normalizedStatus] ?? normalizedStatus;
@@ -1571,8 +1619,16 @@
       const completionPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
       
       // Determine overall route status
-      const inProgressCount = records.filter(r => normalizeStatus(r.status) === 'In Progress').length;
-      const upNextCount = records.filter(r => normalizeStatus(r.status) === 'Up Next').length;
+      const inProgressCount = records.filter(r => {
+        const status = normalizeStatus(r.status);
+        return status === 'In Progress' || status === 'In Progress 2nd Pass' || 
+               status === 'In Progress 3rd Pass' || status === 'In Progress 4th Pass';
+      }).length;
+      const upNextCount = records.filter(r => {
+        const status = normalizeStatus(r.status);
+        return status === 'Up Next' || status === 'Up Next- 2nd Pass' || 
+               status === 'Up Next- 3rd Pass' || status === 'Up Next- 4th Pass';
+      }).length;
       let routeStatus = 'Not Started';
       if (completedCount === totalCount) {
         routeStatus = 'Completed';
@@ -1885,7 +1941,11 @@
             if (isMounted && Array.isArray(payload.records)) {
               // Filter for "In Progress" streets and group by route
               const inProgressStreets = payload.records.filter(
-                record => normalizeStatus(record.status) === 'In Progress'
+                record => {
+                  const status = normalizeStatus(record.status);
+                  return status === 'In Progress' || status === 'In Progress 2nd Pass' || 
+                         status === 'In Progress 3rd Pass' || status === 'In Progress 4th Pass';
+                }
               );
 
               // Group by route number
@@ -2132,7 +2192,11 @@
             if (isMounted && Array.isArray(payload.records)) {
               // Filter for "Up Next" streets and group by route
               const upNextStreets = payload.records.filter(
-                record => normalizeStatus(record.status) === 'Up Next'
+                record => {
+                  const status = normalizeStatus(record.status);
+                  return status === 'Up Next' || status === 'Up Next- 2nd Pass' || 
+                         status === 'Up Next- 3rd Pass' || status === 'Up Next- 4th Pass';
+                }
               );
 
               // Group by route number
@@ -2439,7 +2503,13 @@
               const statusOrder = { 
                 'Not Started': 0, 
                 'Up Next': 1,
-                'In Progress': 2, 
+                'Up Next- 2nd Pass': 1.1,
+                'Up Next- 3rd Pass': 1.2,
+                'Up Next- 4th Pass': 1.3,
+                'In Progress': 2,
+                'In Progress 2nd Pass': 2.1,
+                'In Progress 3rd Pass': 2.2,
+                'In Progress 4th Pass': 2.3,
                 'Completed 1st Pass': 3,
                 'Completed 2nd Pass': 4,
                 'Completed 3rd Pass': 5,
