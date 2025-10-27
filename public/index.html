@@ -1974,6 +1974,10 @@
               })) || []
             });
             
+            // Check all unique status values in the data
+            const allStatuses = [...new Set(payload.records?.map(r => r.status) || [])];
+            console.log('ActiveCrews: All unique status values in data:', allStatuses);
+            
             if (isMounted && Array.isArray(payload.records)) {
               // Filter for "In Progress" streets and group by route
               const inProgressStreets = payload.records.filter(
@@ -1981,6 +1985,15 @@
                   const status = normalizeStatus(record.status);
                   const isInProgress = status === 'In Progress' || status === 'In Progress 2nd Pass' || 
                          status === 'In Progress 3rd Pass' || status === 'In Progress 4th Pass';
+                  
+                  // Debug logging for first few records to see normalization
+                  if (payload.records.indexOf(record) < 5) {
+                    console.log('ActiveCrews: Status normalization:', { 
+                      original: record.status, 
+                      normalized: status,
+                      isInProgress: isInProgress
+                    });
+                  }
                   
                   // Debug logging
                   if (isInProgress) {
