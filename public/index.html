@@ -1965,15 +1965,38 @@
             }
 
             const payload = await response.json();
+            console.log('ActiveCrews: API response:', { 
+              recordCount: payload.records?.length || 0,
+              sampleRecords: payload.records?.slice(0, 3).map(r => ({ 
+                street: r.street, 
+                status: r.status, 
+                route: r.routeNumber 
+              })) || []
+            });
+            
             if (isMounted && Array.isArray(payload.records)) {
               // Filter for "In Progress" streets and group by route
               const inProgressStreets = payload.records.filter(
                 record => {
                   const status = normalizeStatus(record.status);
-                  return status === 'In Progress' || status === 'In Progress 2nd Pass' || 
+                  const isInProgress = status === 'In Progress' || status === 'In Progress 2nd Pass' || 
                          status === 'In Progress 3rd Pass' || status === 'In Progress 4th Pass';
+                  
+                  // Debug logging
+                  if (isInProgress) {
+                    console.log('ActiveCrews: Found In Progress street:', { 
+                      street: record.street, 
+                      status: record.status, 
+                      normalized: status,
+                      route: record.routeNumber 
+                    });
+                  }
+                  
+                  return isInProgress;
                 }
               );
+              
+              console.log('ActiveCrews: Total In Progress streets found:', inProgressStreets.length);
 
               // Group by route number
               const routeMap = {};
@@ -1994,6 +2017,12 @@
                 const bNum = parseInt(b.routeNumber) || 999999;
                 return aNum - bNum;
               });
+
+              console.log('ActiveCrews: Routes created:', routes.map(r => ({ 
+                route: r.routeNumber, 
+                streetCount: r.streets.length,
+                streets: r.streets.map(s => ({ street: s.street, status: s.status }))
+              })));
 
               setActiveRoutes(routes);
             }
@@ -2030,8 +2059,12 @@
         setSelectedRoute(null);
       };
 
+      // Debug logging
+      console.log('ActiveCrews render check:', { loading, error, activeRoutesLength: activeRoutes.length });
+      
       // Don't render if loading, error, or no active routes
       if (loading || error || activeRoutes.length === 0) {
+        console.log('ActiveCrews: Not rendering because:', { loading, error, noRoutes: activeRoutes.length === 0 });
         return null;
       }
 
