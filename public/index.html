@@ -1629,13 +1629,40 @@
         return status === 'Up Next' || status === 'Up Next- 2nd Pass' || 
                status === 'Up Next- 3rd Pass' || status === 'Up Next- 4th Pass';
       }).length;
+      
+      // Determine the highest pass status for mixed routes
+      let highestInProgressPass = 0;
+      let highestUpNextPass = 0;
+      
+      records.forEach(r => {
+        const status = normalizeStatus(r.status);
+        if (status === 'In Progress') highestInProgressPass = Math.max(highestInProgressPass, 1);
+        if (status === 'In Progress 2nd Pass') highestInProgressPass = Math.max(highestInProgressPass, 2);
+        if (status === 'In Progress 3rd Pass') highestInProgressPass = Math.max(highestInProgressPass, 3);
+        if (status === 'In Progress 4th Pass') highestInProgressPass = Math.max(highestInProgressPass, 4);
+        if (status === 'Up Next') highestUpNextPass = Math.max(highestUpNextPass, 1);
+        if (status === 'Up Next- 2nd Pass') highestUpNextPass = Math.max(highestUpNextPass, 2);
+        if (status === 'Up Next- 3rd Pass') highestUpNextPass = Math.max(highestUpNextPass, 3);
+        if (status === 'Up Next- 4th Pass') highestUpNextPass = Math.max(highestUpNextPass, 4);
+      });
+      
       let routeStatus = 'Not Started';
       if (completedCount === totalCount) {
         routeStatus = 'Completed';
       } else if (completedCount > 0 || inProgressCount > 0) {
-        routeStatus = 'In Progress';
+        // Show the highest pass status if there are multiple passes
+        if (highestInProgressPass > 1) {
+          routeStatus = `In Progress ${highestInProgressPass === 2 ? '2nd' : highestInProgressPass === 3 ? '3rd' : '4th'} Pass`;
+        } else {
+          routeStatus = 'In Progress';
+        }
       } else if (upNextCount > 0) {
-        routeStatus = 'Up Next';
+        // Show the highest pass status if there are multiple passes
+        if (highestUpNextPass > 1) {
+          routeStatus = `Up Next- ${highestUpNextPass === 2 ? '2nd' : highestUpNextPass === 3 ? '3rd' : '4th'} Pass`;
+        } else {
+          routeStatus = 'Up Next';
+        }
       }
 
       return html`
