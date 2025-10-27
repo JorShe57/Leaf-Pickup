@@ -440,8 +440,6 @@
 
       const normalized = value.trim().toLowerCase();
       
-      // Debug logging to help troubleshoot
-      console.log('normalizeStatus input:', { original: value, trimmed: value.trim(), lowercased: normalized });
       
       switch (normalized) {
         case 'not started':
@@ -472,16 +470,19 @@
           return 'In Progress';
         case 'in progress 2nd pass':
         case 'in progress 2nd':
+        case 'in progress- 2nd pass':
         case 'in-progress 2nd pass':
         case 'in-progress 2nd':
           return 'In Progress 2nd Pass';
         case 'in progress 3rd pass':
         case 'in progress 3rd':
+        case 'in progress- 3rd pass':
         case 'in-progress 3rd pass':
         case 'in-progress 3rd':
           return 'In Progress 3rd Pass';
         case 'in progress 4th pass':
         case 'in progress 4th':
+        case 'in progress- 4th pass':
         case 'in-progress 4th pass':
         case 'in-progress 4th':
           return 'In Progress 4th Pass';
@@ -509,7 +510,6 @@
         case 'complete':
           return 'Completed';
         default:
-          console.log('normalizeStatus: No match found for:', normalized);
           return value;
       }
     }
@@ -550,10 +550,6 @@
         'inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border whitespace-nowrap';
       const variant = statusStyles[normalizedStatus] ?? 'bg-gray-100 text-gray-700 border-gray-300';
 
-      // Debug logging to help troubleshoot
-      if (normalizedStatus === 'Unknown' && status !== 'Unknown') {
-        console.log('StatusBadge: Unknown status detected:', { original: status, normalized: normalizedStatus });
-      }
 
       return html`<span className="${baseClasses} ${variant}">
         ${label}
@@ -1351,7 +1347,6 @@
         };
 
         try {
-          console.log('[Camera Analysis] Sending request to n8n...');
           const response = await fetch('/api/analyze-pile', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1361,7 +1356,6 @@
             }),
           });
 
-          console.log('[Camera Analysis] Response received:', response.status);
 
           if (!response.ok) {
             const error = new Error('Analysis request failed');
@@ -1965,18 +1959,6 @@
             }
 
             const payload = await response.json();
-            console.log('ActiveCrews: API response:', { 
-              recordCount: payload.records?.length || 0,
-              sampleRecords: payload.records?.slice(0, 3).map(r => ({ 
-                street: r.street, 
-                status: r.status, 
-                route: r.routeNumber 
-              })) || []
-            });
-            
-            // Check all unique status values in the data
-            const allStatuses = [...new Set(payload.records?.map(r => r.status) || [])];
-            console.log('ActiveCrews: All unique status values in data:', allStatuses);
             
             if (isMounted && Array.isArray(payload.records)) {
               // Filter for "In Progress" streets and group by route
@@ -1986,30 +1968,11 @@
                   const isInProgress = status === 'In Progress' || status === 'In Progress 2nd Pass' || 
                          status === 'In Progress 3rd Pass' || status === 'In Progress 4th Pass';
                   
-                  // Debug logging for first few records to see normalization
-                  if (payload.records.indexOf(record) < 5) {
-                    console.log('ActiveCrews: Status normalization:', { 
-                      original: record.status, 
-                      normalized: status,
-                      isInProgress: isInProgress
-                    });
-                  }
-                  
-                  // Debug logging
-                  if (isInProgress) {
-                    console.log('ActiveCrews: Found In Progress street:', { 
-                      street: record.street, 
-                      status: record.status, 
-                      normalized: status,
-                      route: record.routeNumber 
-                    });
-                  }
                   
                   return isInProgress;
                 }
               );
               
-              console.log('ActiveCrews: Total In Progress streets found:', inProgressStreets.length);
 
               // Group by route number
               const routeMap = {};
@@ -2031,11 +1994,6 @@
                 return aNum - bNum;
               });
 
-              console.log('ActiveCrews: Routes created:', routes.map(r => ({ 
-                route: r.routeNumber, 
-                streetCount: r.streets.length,
-                streets: r.streets.map(s => ({ street: s.street, status: s.status }))
-              })));
 
               setActiveRoutes(routes);
             }
@@ -2072,12 +2030,8 @@
         setSelectedRoute(null);
       };
 
-      // Debug logging
-      console.log('ActiveCrews render check:', { loading, error, activeRoutesLength: activeRoutes.length });
-      
       // Don't render if loading, error, or no active routes
       if (loading || error || activeRoutes.length === 0) {
-        console.log('ActiveCrews: Not rendering because:', { loading, error, noRoutes: activeRoutes.length === 0 });
         return null;
       }
 
@@ -2542,8 +2496,6 @@
             const payload = await response.json();
             if (isMounted) {
               const records = Array.isArray(payload.records) ? payload.records : [];
-              // Debug logging to see what statuses we're getting
-              console.log('Sample records with statuses:', records.slice(0, 5).map(r => ({ street: r.street, status: r.status })));
               setRecords(records);
             }
           } catch (err) {
