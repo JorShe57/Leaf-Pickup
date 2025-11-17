@@ -403,14 +403,26 @@
       'Up Next- 2nd Pass': 'bg-indigo-100 text-indigo-800 border-indigo-300',
       'Up Next- 3rd Pass': 'bg-purple-100 text-purple-800 border-purple-300',
       'Up Next- 4th Pass': 'bg-violet-100 text-violet-800 border-violet-300',
+      'Up Next- 5th Pass': 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300',
+      'Up Next- 6th Pass': 'bg-pink-100 text-pink-800 border-pink-300',
+      'Up Next- 7th Pass': 'bg-rose-100 text-rose-800 border-rose-300',
+      'Up Next- 8th Pass': 'bg-red-100 text-red-800 border-red-300',
       'In Progress': 'bg-yellow-100 text-yellow-800 border-yellow-300 status-pulse',
       'In Progress 2nd Pass': 'bg-orange-100 text-orange-800 border-orange-300 status-pulse',
       'In Progress 3rd Pass': 'bg-amber-100 text-amber-800 border-amber-300 status-pulse',
       'In Progress 4th Pass': 'bg-lime-100 text-lime-800 border-lime-300 status-pulse',
+      'In Progress 5th Pass': 'bg-emerald-100 text-emerald-800 border-emerald-300 status-pulse',
+      'In Progress 6th Pass': 'bg-teal-100 text-teal-800 border-teal-300 status-pulse',
+      'In Progress 7th Pass': 'bg-cyan-100 text-cyan-800 border-cyan-300 status-pulse',
+      'In Progress 8th Pass': 'bg-sky-100 text-sky-800 border-sky-300 status-pulse',
       'Completed 1st Pass': 'bg-green-100 text-green-800 border-green-300',
       'Completed 2nd Pass': 'bg-emerald-100 text-emerald-800 border-emerald-300',
       'Completed 3rd Pass': 'bg-teal-100 text-teal-800 border-teal-300',
       'Completed 4th Pass': 'bg-cyan-100 text-cyan-800 border-cyan-300',
+      'Completed 5th Pass': 'bg-blue-100 text-blue-800 border-blue-300',
+      'Completed 6th Pass': 'bg-indigo-100 text-indigo-800 border-indigo-300',
+      'Completed 7th Pass': 'bg-purple-100 text-purple-800 border-purple-300',
+      'Completed 8th Pass': 'bg-violet-100 text-violet-800 border-violet-300',
       // Legacy support - keeping old "Completed" for backward compatibility
       Completed: 'bg-green-100 text-green-800 border-green-300',
     };
@@ -421,14 +433,26 @@
       'Up Next- 2nd Pass': '🔜',
       'Up Next- 3rd Pass': '🔜',
       'Up Next- 4th Pass': '🔜',
+      'Up Next- 5th Pass': '🔜',
+      'Up Next- 6th Pass': '🔜',
+      'Up Next- 7th Pass': '🔜',
+      'Up Next- 8th Pass': '🔜',
       'In Progress': '🔄',
       'In Progress 2nd Pass': '🔄',
       'In Progress 3rd Pass': '🔄',
       'In Progress 4th Pass': '🔄',
+      'In Progress 5th Pass': '🔄',
+      'In Progress 6th Pass': '🔄',
+      'In Progress 7th Pass': '🔄',
+      'In Progress 8th Pass': '🔄',
       'Completed 1st Pass': '✅',
       'Completed 2nd Pass': '✅',
       'Completed 3rd Pass': '✅',
       'Completed 4th Pass': '✅',
+      'Completed 5th Pass': '✅',
+      'Completed 6th Pass': '✅',
+      'Completed 7th Pass': '✅',
+      'Completed 8th Pass': '✅',
       // Legacy support
       Completed: '✅',
     };
@@ -463,6 +487,26 @@
         case 'up next 4th pass':
         case 'up next 4th':
           return 'Up Next- 4th Pass';
+        case 'up next- 5th pass':
+        case 'up next- 5th':
+        case 'up next 5th pass':
+        case 'up next 5th':
+          return 'Up Next- 5th Pass';
+        case 'up next- 6th pass':
+        case 'up next- 6th':
+        case 'up next 6th pass':
+        case 'up next 6th':
+          return 'Up Next- 6th Pass';
+        case 'up next- 7th pass':
+        case 'up next- 7th':
+        case 'up next 7th pass':
+        case 'up next 7th':
+          return 'Up Next- 7th Pass';
+        case 'up next- 8th pass':
+        case 'up next- 8th':
+        case 'up next 8th pass':
+        case 'up next 8th':
+          return 'Up Next- 8th Pass';
         case 'in progress':
         case 'in-progress':
         case 'in progess':
@@ -486,6 +530,30 @@
         case 'in-progress 4th pass':
         case 'in-progress 4th':
           return 'In Progress 4th Pass';
+        case 'in progress 5th pass':
+        case 'in progress 5th':
+        case 'in progress- 5th pass':
+        case 'in-progress 5th pass':
+        case 'in-progress 5th':
+          return 'In Progress 5th Pass';
+        case 'in progress 6th pass':
+        case 'in progress 6th':
+        case 'in progress- 6th pass':
+        case 'in-progress 6th pass':
+        case 'in-progress 6th':
+          return 'In Progress 6th Pass';
+        case 'in progress 7th pass':
+        case 'in progress 7th':
+        case 'in progress- 7th pass':
+        case 'in-progress 7th pass':
+        case 'in-progress 7th':
+          return 'In Progress 7th Pass';
+        case 'in progress 8th pass':
+        case 'in progress 8th':
+        case 'in progress- 8th pass':
+        case 'in-progress 8th pass':
+        case 'in-progress 8th':
+          return 'In Progress 8th Pass';
         case 'completed 1st pass':
         case 'completed first pass':
         case '1st pass':
@@ -506,6 +574,26 @@
         case '4th pass':
         case 'fourth pass':
           return 'Completed 4th Pass';
+        case 'completed 5th pass':
+        case 'completed fifth pass':
+        case '5th pass':
+        case 'fifth pass':
+          return 'Completed 5th Pass';
+        case 'completed 6th pass':
+        case 'completed sixth pass':
+        case '6th pass':
+        case 'sixth pass':
+          return 'Completed 6th Pass';
+        case 'completed 7th pass':
+        case 'completed seventh pass':
+        case '7th pass':
+        case 'seventh pass':
+          return 'Completed 7th Pass';
+        case 'completed 8th pass':
+        case 'completed eighth pass':
+        case '8th pass':
+        case 'eighth pass':
+          return 'Completed 8th Pass';
         case 'completed':
         case 'complete':
           return 'Completed';
@@ -521,7 +609,11 @@
              normalized === 'Completed 1st Pass' || 
              normalized === 'Completed 2nd Pass' || 
              normalized === 'Completed 3rd Pass' || 
-             normalized === 'Completed 4th Pass';
+             normalized === 'Completed 4th Pass' ||
+             normalized === 'Completed 5th Pass' ||
+             normalized === 'Completed 6th Pass' ||
+             normalized === 'Completed 7th Pass' ||
+             normalized === 'Completed 8th Pass';
     }
 
     function StatusBadge({ status = 'Unknown' }) {
@@ -534,14 +626,26 @@
         'Up Next- 2nd Pass': 'Up Next 2nd',
         'Up Next- 3rd Pass': 'Up Next 3rd',
         'Up Next- 4th Pass': 'Up Next 4th',
+        'Up Next- 5th Pass': 'Up Next 5th',
+        'Up Next- 6th Pass': 'Up Next 6th',
+        'Up Next- 7th Pass': 'Up Next 7th',
+        'Up Next- 8th Pass': 'Up Next 8th',
         'In Progress': 'In Progress',
         'In Progress 2nd Pass': 'In Progress 2nd',
         'In Progress 3rd Pass': 'In Progress 3rd',
         'In Progress 4th Pass': 'In Progress 4th',
+        'In Progress 5th Pass': 'In Progress 5th',
+        'In Progress 6th Pass': 'In Progress 6th',
+        'In Progress 7th Pass': 'In Progress 7th',
+        'In Progress 8th Pass': 'In Progress 8th',
         'Completed 1st Pass': '1st Pass ✅',
         'Completed 2nd Pass': '2nd Pass ✅',
         'Completed 3rd Pass': '3rd Pass ✅',
         'Completed 4th Pass': '4th Pass ✅',
+        'Completed 5th Pass': '5th Pass ✅',
+        'Completed 6th Pass': '6th Pass ✅',
+        'Completed 7th Pass': '7th Pass ✅',
+        'Completed 8th Pass': '8th Pass ✅',
         'Completed': 'Completed ✅'
       };
       
@@ -1616,12 +1720,16 @@
       const inProgressCount = records.filter(r => {
         const status = normalizeStatus(r.status);
         return status === 'In Progress' || status === 'In Progress 2nd Pass' || 
-               status === 'In Progress 3rd Pass' || status === 'In Progress 4th Pass';
+               status === 'In Progress 3rd Pass' || status === 'In Progress 4th Pass' ||
+               status === 'In Progress 5th Pass' || status === 'In Progress 6th Pass' ||
+               status === 'In Progress 7th Pass' || status === 'In Progress 8th Pass';
       }).length;
       const upNextCount = records.filter(r => {
         const status = normalizeStatus(r.status);
         return status === 'Up Next' || status === 'Up Next- 2nd Pass' || 
-               status === 'Up Next- 3rd Pass' || status === 'Up Next- 4th Pass';
+               status === 'Up Next- 3rd Pass' || status === 'Up Next- 4th Pass' ||
+               status === 'Up Next- 5th Pass' || status === 'Up Next- 6th Pass' ||
+               status === 'Up Next- 7th Pass' || status === 'Up Next- 8th Pass';
       }).length;
       
       // Determine the highest pass status for mixed routes
@@ -1634,10 +1742,18 @@
         if (status === 'In Progress 2nd Pass') highestInProgressPass = Math.max(highestInProgressPass, 2);
         if (status === 'In Progress 3rd Pass') highestInProgressPass = Math.max(highestInProgressPass, 3);
         if (status === 'In Progress 4th Pass') highestInProgressPass = Math.max(highestInProgressPass, 4);
+        if (status === 'In Progress 5th Pass') highestInProgressPass = Math.max(highestInProgressPass, 5);
+        if (status === 'In Progress 6th Pass') highestInProgressPass = Math.max(highestInProgressPass, 6);
+        if (status === 'In Progress 7th Pass') highestInProgressPass = Math.max(highestInProgressPass, 7);
+        if (status === 'In Progress 8th Pass') highestInProgressPass = Math.max(highestInProgressPass, 8);
         if (status === 'Up Next') highestUpNextPass = Math.max(highestUpNextPass, 1);
         if (status === 'Up Next- 2nd Pass') highestUpNextPass = Math.max(highestUpNextPass, 2);
         if (status === 'Up Next- 3rd Pass') highestUpNextPass = Math.max(highestUpNextPass, 3);
         if (status === 'Up Next- 4th Pass') highestUpNextPass = Math.max(highestUpNextPass, 4);
+        if (status === 'Up Next- 5th Pass') highestUpNextPass = Math.max(highestUpNextPass, 5);
+        if (status === 'Up Next- 6th Pass') highestUpNextPass = Math.max(highestUpNextPass, 6);
+        if (status === 'Up Next- 7th Pass') highestUpNextPass = Math.max(highestUpNextPass, 7);
+        if (status === 'Up Next- 8th Pass') highestUpNextPass = Math.max(highestUpNextPass, 8);
       });
       
       let routeStatus = 'Not Started';
@@ -1646,14 +1762,16 @@
       } else if (completedCount > 0 || inProgressCount > 0) {
         // Show the highest pass status if there are multiple passes
         if (highestInProgressPass > 1) {
-          routeStatus = `In Progress ${highestInProgressPass === 2 ? '2nd' : highestInProgressPass === 3 ? '3rd' : '4th'} Pass`;
+          const passLabels = { 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th' };
+          routeStatus = `In Progress ${passLabels[highestInProgressPass] || highestInProgressPass + 'th'} Pass`;
         } else {
           routeStatus = 'In Progress';
         }
       } else if (upNextCount > 0) {
         // Show the highest pass status if there are multiple passes
         if (highestUpNextPass > 1) {
-          routeStatus = `Up Next- ${highestUpNextPass === 2 ? '2nd' : highestUpNextPass === 3 ? '3rd' : '4th'} Pass`;
+          const passLabels = { 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th' };
+          routeStatus = `Up Next- ${passLabels[highestUpNextPass] || highestUpNextPass + 'th'} Pass`;
         } else {
           routeStatus = 'Up Next';
         }
@@ -1966,7 +2084,9 @@
                 record => {
                   const status = normalizeStatus(record.status);
                   const isInProgress = status === 'In Progress' || status === 'In Progress 2nd Pass' || 
-                         status === 'In Progress 3rd Pass' || status === 'In Progress 4th Pass';
+                         status === 'In Progress 3rd Pass' || status === 'In Progress 4th Pass' ||
+                         status === 'In Progress 5th Pass' || status === 'In Progress 6th Pass' ||
+                         status === 'In Progress 7th Pass' || status === 'In Progress 8th Pass';
                   
                   
                   return isInProgress;
@@ -2222,7 +2342,9 @@
                 record => {
                   const status = normalizeStatus(record.status);
                   return status === 'Up Next' || status === 'Up Next- 2nd Pass' || 
-                         status === 'Up Next- 3rd Pass' || status === 'Up Next- 4th Pass';
+                         status === 'Up Next- 3rd Pass' || status === 'Up Next- 4th Pass' ||
+                         status === 'Up Next- 5th Pass' || status === 'Up Next- 6th Pass' ||
+                         status === 'Up Next- 7th Pass' || status === 'Up Next- 8th Pass';
                 }
               );
 
@@ -2531,15 +2653,27 @@
                 'Up Next- 2nd Pass': 1.1,
                 'Up Next- 3rd Pass': 1.2,
                 'Up Next- 4th Pass': 1.3,
+                'Up Next- 5th Pass': 1.4,
+                'Up Next- 6th Pass': 1.5,
+                'Up Next- 7th Pass': 1.6,
+                'Up Next- 8th Pass': 1.7,
                 'In Progress': 2,
                 'In Progress 2nd Pass': 2.1,
                 'In Progress 3rd Pass': 2.2,
                 'In Progress 4th Pass': 2.3,
+                'In Progress 5th Pass': 2.4,
+                'In Progress 6th Pass': 2.5,
+                'In Progress 7th Pass': 2.6,
+                'In Progress 8th Pass': 2.7,
                 'Completed 1st Pass': 3,
                 'Completed 2nd Pass': 4,
                 'Completed 3rd Pass': 5,
                 'Completed 4th Pass': 6,
-                'Completed': 7
+                'Completed 5th Pass': 7,
+                'Completed 6th Pass': 8,
+                'Completed 7th Pass': 9,
+                'Completed 8th Pass': 10,
+                'Completed': 11
               };
               const aStatus = normalizeStatus(a.status || 'Unknown');
               const bStatus = normalizeStatus(b.status || 'Unknown');
