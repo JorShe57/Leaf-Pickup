@@ -32,180 +32,13 @@
   
   <!-- Preload critical resources -->
   <link rel="preload" href="/images/sebastian-volkel-7QT_puk5CJQ-unsplash.jpg.webp" as="image">
-  
-  <!-- CDN Fallback Loader - Tries multiple CDNs for reliability -->
-  <script>
-    // Loading indicator
-    document.addEventListener('DOMContentLoaded', function() {
-      const root = document.getElementById('root');
-      if (root) {
-        root.innerHTML = `
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(to bottom, rgba(25, 55, 95, 0.3), rgba(25, 55, 95, 0.7)); color: white; font-family: system-ui, -apple-system, sans-serif;">
-            <div class="loading-spinner" style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
-            <p style="font-size: 16px; margin: 0;">Loading resources...</p>
-            <p id="load-status" style="font-size: 12px; margin-top: 8px; opacity: 0.8;"></p>
-          </div>
-          <style>
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          </style>
-        `;
-      }
-    });
-
-    // Script loader with fallback CDNs
-    function loadScriptWithFallback(name, urls, options = {}) {
-      const statusEl = document.getElementById('load-status');
-      if (statusEl) {
-        statusEl.textContent = `Loading ${name}...`;
-      }
-      
-      return new Promise((resolve, reject) => {
-        let currentIndex = 0;
-        
-        function tryLoad(index) {
-          if (index >= urls.length) {
-            reject(new Error(`Failed to load ${name} from all CDNs`));
-            return;
-          }
-          
-          const script = document.createElement('script');
-          script.crossOrigin = options.crossOrigin || null;
-          script.src = urls[index];
-          
-          script.onload = () => {
-            console.log(`✓ Loaded ${name} from ${new URL(urls[index]).hostname}`);
-            resolve();
-          };
-          
-          script.onerror = () => {
-            console.warn(`✗ Failed to load ${name} from ${new URL(urls[index]).hostname}, trying next...`);
-            document.head.removeChild(script);
-            tryLoad(index + 1);
-          };
-          
-          document.head.appendChild(script);
-        }
-        
-        tryLoad(0);
-      });
-    }
-
-    // Define all scripts with fallback CDNs
-    const scriptsToLoad = [
-      {
-        name: 'React',
-        urls: [
-          'https://unpkg.com/react@18/umd/react.production.min.js',
-          'https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js',
-          'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js'
-        ],
-        options: { crossOrigin: 'anonymous' }
-      },
-      {
-        name: 'React DOM',
-        urls: [
-          'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
-          'https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js',
-          'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js'
-        ],
-        options: { crossOrigin: 'anonymous' }
-      },
-      {
-        name: 'Tailwind CSS',
-        urls: [
-          'https://cdn.tailwindcss.com',
-          'https://cdn.tailwindcss.com/3.4.0'
-        ],
-        optional: true // App can work without Tailwind, just won't have styles
-      },
-      {
-        name: 'htm',
-        urls: [
-          'https://unpkg.com/htm@3.1.1/dist/htm.umd.js',
-          'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js',
-          'https://cdnjs.cloudflare.com/ajax/libs/htm/3.1.1/htm.umd.js'
-        ]
-      },
-      {
-        name: 'GSAP',
-        urls: [
-          'https://unpkg.com/gsap@3.12.2/dist/gsap.min.js',
-          'https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js',
-          'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js'
-        ]
-      },
-      {
-        name: 'DOMPurify',
-        urls: [
-          'https://unpkg.com/dompurify@3.0.6/dist/purify.min.js',
-          'https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js',
-          'https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js'
-        ]
-      }
-    ];
-
-    // Load all scripts sequentially
-    async function loadAllScripts() {
-      const failedScripts = [];
-      
-      for (const script of scriptsToLoad) {
-        try {
-          await loadScriptWithFallback(script.name, script.urls, script.options);
-        } catch (error) {
-          if (script.optional) {
-            console.warn(`⚠ Optional script ${script.name} failed to load, continuing...`);
-          } else {
-            console.error(`✗ Required script ${script.name} failed to load`);
-            failedScripts.push(script.name);
-          }
-        }
-      }
-      
-      // Check if critical scripts loaded
-      if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof htm === 'undefined') {
-        const root = document.getElementById('root');
-        if (root) {
-          root.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(to bottom, rgba(25, 55, 95, 0.3), rgba(25, 55, 95, 0.7)); color: white; font-family: system-ui, -apple-system, sans-serif; padding: 20px; text-align: center;">
-              <h1 style="font-size: 24px; margin-bottom: 16px;">⚠️ Unable to Load Resources</h1>
-              <p style="font-size: 16px; margin-bottom: 8px;">We're experiencing issues loading required resources.</p>
-              <p style="font-size: 14px; opacity: 0.9; margin-bottom: 24px;">This may be due to a CDN outage. Please try refreshing the page.</p>
-              <button onclick="window.location.reload()" style="background: white; color: #1a6b2e; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
-                Refresh Page
-              </button>
-            </div>
-          `;
-        }
-        return;
-      }
-      
-      const statusEl = document.getElementById('load-status');
-      if (statusEl) {
-        if (failedScripts.length > 0) {
-          statusEl.textContent = `Loaded (some optional resources unavailable)`;
-        } else {
-          statusEl.textContent = 'All resources loaded!';
-        }
-      }
-      
-      // Wait a moment for scripts to initialize
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      console.log('✓ All critical scripts loaded successfully');
-      if (failedScripts.length > 0) {
-        console.warn('⚠ Some optional scripts failed:', failedScripts);
-      }
-      
-      // Dispatch event to signal scripts are ready
-      window.dispatchEvent(new CustomEvent('scripts-loaded'));
-    }
-
-    // Start loading scripts
-    loadAllScripts();
-  </script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js"></script>
+  <script src="https://unpkg.com/gsap@3.12.2/dist/gsap.min.js"></script>
+  <!-- DOMPurify for HTML sanitization (security) -->
+  <script src="https://unpkg.com/dompurify@3.0.6/dist/purify.min.js"></script>
   
   <style>
     :root {
@@ -469,6 +302,10 @@
   </style>
 </head>
 <body>
+  <!-- Cloudflare Outage Notice -->
+  <div style="background: #dc2626; color: white; padding: 16px; text-align: center; font-family: system-ui, -apple-system, sans-serif; font-size: 16px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 9999; position: relative;">
+    ⚠️ Due to the Cloudflare outage, we are experiencing some technical difficulties. Please bear with us.
+  </div>
   <div id="root"></div>
   <script>
     const { useState, useEffect, useMemo } = React;
@@ -3130,45 +2967,7 @@
       </div>`;
     }
 
-    // Initialize app when scripts are loaded
-    function initializeApp() {
-      // Verify all required libraries are available
-      if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof htm === 'undefined') {
-        console.error('Required libraries not available');
-        return;
-      }
-      
-      try {
-        ReactDOM.createRoot(document.getElementById('root')).render(html`<${App} />`);
-        console.log('✓ App initialized successfully');
-      } catch (error) {
-        console.error('Failed to initialize app:', error);
-        const root = document.getElementById('root');
-        if (root) {
-          root.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(to bottom, rgba(25, 55, 95, 0.3), rgba(25, 55, 95, 0.7)); color: white; font-family: system-ui, -apple-system, sans-serif; padding: 20px; text-align: center;">
-              <h1 style="font-size: 24px; margin-bottom: 16px;">⚠️ App Initialization Error</h1>
-              <p style="font-size: 16px; margin-bottom: 24px;">An error occurred while starting the app. Please refresh the page.</p>
-              <button onclick="window.location.reload()" style="background: white; color: #1a6b2e; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
-                Refresh Page
-              </button>
-            </div>
-          `;
-        }
-      }
-    }
-
-    // Wait for scripts to load before initializing app
-    if (document.readyState === 'loading') {
-      window.addEventListener('scripts-loaded', initializeApp);
-    } else {
-      // Scripts might already be loaded (e.g., from cache)
-      if (typeof React !== 'undefined' && typeof ReactDOM !== 'undefined' && typeof htm !== 'undefined') {
-        initializeApp();
-      } else {
-        window.addEventListener('scripts-loaded', initializeApp);
-      }
-    }
+    ReactDOM.createRoot(document.getElementById('root')).render(html`<${App} />`);
   </script>
 </body>
 </html>
