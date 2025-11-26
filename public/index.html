@@ -1718,62 +1718,99 @@
       
       // Determine overall route status
       const inProgressCount = records.filter(r => {
+        if (!r.status) return false;
         const status = normalizeStatus(r.status);
+        const statusLower = status.toLowerCase();
+        // Check for exact matches or if status contains "in progress" (handles edge cases)
         return status === 'In Progress' || status === 'In Progress 2nd Pass' || 
                status === 'In Progress 3rd Pass' || status === 'In Progress 4th Pass' ||
                status === 'In Progress 5th Pass' || status === 'In Progress 6th Pass' ||
-               status === 'In Progress 7th Pass' || status === 'In Progress 8th Pass';
+               status === 'In Progress 7th Pass' || status === 'In Progress 8th Pass' ||
+               (statusLower.includes('in progress') && !statusLower.includes('completed'));
       }).length;
       const upNextCount = records.filter(r => {
+        if (!r.status) return false;
         const status = normalizeStatus(r.status);
+        const statusLower = status.toLowerCase();
+        // Check for exact matches or if status contains "up next" (handles edge cases)
         return status === 'Up Next' || status === 'Up Next- 2nd Pass' || 
                status === 'Up Next- 3rd Pass' || status === 'Up Next- 4th Pass' ||
                status === 'Up Next- 5th Pass' || status === 'Up Next- 6th Pass' ||
-               status === 'Up Next- 7th Pass' || status === 'Up Next- 8th Pass';
+               status === 'Up Next- 7th Pass' || status === 'Up Next- 8th Pass' ||
+               (statusLower.includes('up next') && !statusLower.includes('completed') && !statusLower.includes('in progress'));
       }).length;
       
       // Determine the highest pass status for mixed routes
       let highestInProgressPass = 0;
       let highestUpNextPass = 0;
+      let highestCompletedPass = 0;
       
       records.forEach(r => {
+        if (!r.status) return;
         const status = normalizeStatus(r.status);
-        if (status === 'In Progress') highestInProgressPass = Math.max(highestInProgressPass, 1);
-        if (status === 'In Progress 2nd Pass') highestInProgressPass = Math.max(highestInProgressPass, 2);
-        if (status === 'In Progress 3rd Pass') highestInProgressPass = Math.max(highestInProgressPass, 3);
-        if (status === 'In Progress 4th Pass') highestInProgressPass = Math.max(highestInProgressPass, 4);
-        if (status === 'In Progress 5th Pass') highestInProgressPass = Math.max(highestInProgressPass, 5);
-        if (status === 'In Progress 6th Pass') highestInProgressPass = Math.max(highestInProgressPass, 6);
-        if (status === 'In Progress 7th Pass') highestInProgressPass = Math.max(highestInProgressPass, 7);
-        if (status === 'In Progress 8th Pass') highestInProgressPass = Math.max(highestInProgressPass, 8);
-        if (status === 'Up Next') highestUpNextPass = Math.max(highestUpNextPass, 1);
-        if (status === 'Up Next- 2nd Pass') highestUpNextPass = Math.max(highestUpNextPass, 2);
-        if (status === 'Up Next- 3rd Pass') highestUpNextPass = Math.max(highestUpNextPass, 3);
-        if (status === 'Up Next- 4th Pass') highestUpNextPass = Math.max(highestUpNextPass, 4);
-        if (status === 'Up Next- 5th Pass') highestUpNextPass = Math.max(highestUpNextPass, 5);
-        if (status === 'Up Next- 6th Pass') highestUpNextPass = Math.max(highestUpNextPass, 6);
-        if (status === 'Up Next- 7th Pass') highestUpNextPass = Math.max(highestUpNextPass, 7);
-        if (status === 'Up Next- 8th Pass') highestUpNextPass = Math.max(highestUpNextPass, 8);
+        const statusLower = status.toLowerCase();
+        
+        // Check for In Progress statuses (exact match or contains "in progress")
+        if (status === 'In Progress' || (statusLower.includes('in progress') && !statusLower.includes('completed'))) {
+          // Extract pass number if present
+          const passMatch = status.match(/(\d+)(?:st|nd|rd|th)\s*pass/i);
+          if (passMatch) {
+            const passNum = parseInt(passMatch[1]);
+            highestInProgressPass = Math.max(highestInProgressPass, passNum);
+          } else {
+            highestInProgressPass = Math.max(highestInProgressPass, 1);
+          }
+        }
+        
+        // Check for Up Next statuses
+        if (status === 'Up Next' || (statusLower.includes('up next') && !statusLower.includes('completed') && !statusLower.includes('in progress'))) {
+          const passMatch = status.match(/(\d+)(?:st|nd|rd|th)\s*pass/i);
+          if (passMatch) {
+            const passNum = parseInt(passMatch[1]);
+            highestUpNextPass = Math.max(highestUpNextPass, passNum);
+          } else {
+            highestUpNextPass = Math.max(highestUpNextPass, 1);
+          }
+        }
+        
+        // Track completed pass statuses to determine route activity
+        if (status === 'Completed' || statusLower.includes('completed')) {
+          const passMatch = status.match(/(\d+)(?:st|nd|rd|th)\s*pass/i);
+          if (passMatch) {
+            const passNum = parseInt(passMatch[1]);
+            highestCompletedPass = Math.max(highestCompletedPass, passNum);
+          } else if (status === 'Completed') {
+            highestCompletedPass = Math.max(highestCompletedPass, 1);
+          }
+        }
       });
       
       let routeStatus = 'Not Started';
+      // Check if route has any active statuses (not all streets are "Not Started")
+      const hasActiveStatuses = completedCount > 0 || inProgressCount > 0 || upNextCount > 0 || highestCompletedPass > 0;
+      
       if (completedCount === totalCount) {
         routeStatus = 'Completed';
-      } else if (completedCount > 0 || inProgressCount > 0) {
-        // Show the highest pass status if there are multiple passes
+      } else if (hasActiveStatuses) {
+        // Prioritize showing In Progress status if present
         if (highestInProgressPass > 1) {
           const passLabels = { 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th' };
           routeStatus = `In Progress ${passLabels[highestInProgressPass] || highestInProgressPass + 'th'} Pass`;
-        } else {
+        } else if (highestInProgressPass === 1) {
           routeStatus = 'In Progress';
-        }
-      } else if (upNextCount > 0) {
-        // Show the highest pass status if there are multiple passes
-        if (highestUpNextPass > 1) {
+        } else if (highestCompletedPass > 0) {
+          // If there are completed passes but no in-progress, show the highest completed pass as the route status
+          const passLabels = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th' };
+          routeStatus = `Completed ${passLabels[highestCompletedPass] || highestCompletedPass + 'th'} Pass`;
+        } else if (highestUpNextPass > 1) {
+          // Show the highest pass status if there are multiple passes
           const passLabels = { 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th' };
           routeStatus = `Up Next- ${passLabels[highestUpNextPass] || highestUpNextPass + 'th'} Pass`;
-        } else {
+        } else if (highestUpNextPass === 1) {
           routeStatus = 'Up Next';
+        } else {
+          // Fallback: if we have active statuses but couldn't determine the specific status, show "In Progress"
+          routeStatus = 'In Progress';
         }
       }
 
