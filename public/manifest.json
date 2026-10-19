@@ -1,7 +1,7 @@
 {
   "name": "Westlake Leaf Collection Tracker",
   "short_name": "Leaf Tracker",
-  "description": "Track leaf collection routes and schedules for Westlake. Check your street's pickup status and analyze your leaf pile.",
+  "description": "Track leaf collection routes and schedules for Westlake. Check your street's pickup status and sign up for email updates.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

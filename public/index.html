@@ -4,18 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Westlake Leaf Collection Tracker</title>
-  
+
   <!-- PWA Meta Tags -->
-  <meta name="description" content="Track leaf collection routes and schedules for Westlake. Check your street's pickup status and analyze your leaf pile.">
+  <meta name="description" content="Track leaf collection routes and schedules for Westlake. Check your street's pickup status and sign up for email updates.">
   <meta name="theme-color" content="#1a6b2e">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Leaf Tracker">
-  
+
   <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.json">
-  
+
   <!-- Icons for iOS -->
   <link rel="apple-touch-icon" href="/icons/icon-152x152.png">
   <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png">
@@ -26,65 +26,21 @@
   <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
   <link rel="apple-touch-icon" sizes="384x384" href="/icons/icon-384x384.png">
   <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png">
-  
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-152x152.png">
-  
+
   <!-- Preload critical resources -->
   <link rel="preload" href="/images/sebastian-volkel-7QT_puk5CJQ-unsplash.jpg.webp" as="image">
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js"></script>
-  <script src="https://unpkg.com/gsap@3.12.2/dist/gsap.min.js"></script>
-  <!-- DOMPurify for HTML sanitization (security) -->
-  <script src="https://unpkg.com/dompurify@3.0.6/dist/purify.min.js"></script>
-  
+
   <style>
     :root {
-      /* Primary Colors */
       --primary-green: #1a6b2e;
-      --primary-green-dark: #145523;
-      --primary-green-hover: #226b38;
-      
-      /* Accent Colors */
-      --accent-blue-overlay: rgba(25, 55, 95, 0.65);
-      --accent-gold: #d4af37;
-      
-      /* Neutral Colors */
-      --white: #ffffff;
-      --off-white: #f8f9fa;
       --light-gray: #e8e9eb;
-      --medium-gray: #6c757d;
-      --dark-gray: #343a40;
-      --black: #000000;
-      
-      /* Text Colors */
-      --text-primary: #212529;
-      --text-secondary: #6c757d;
-      --text-on-green: #ffffff;
-      --text-on-dark: #ffffff;
-      
-      /* Background Colors */
-      --bg-primary: #ffffff;
-      --bg-navigation: #1a6b2e;
-      --bg-hero-overlay: linear-gradient(to bottom, rgba(25, 55, 95, 0.3), rgba(25, 55, 95, 0.7));
-      --bg-button-green: #1a6b2e;
-      --bg-button-hover: #226b38;
-      
-      /* Border Colors */
-      --border-light: #dee2e6;
-      --border-medium: #ced4da;
-      
-      /* Button/Interactive Elements */
-      --button-primary-bg: #1a6b2e;
-      --button-primary-hover: #226b38;
-      --button-primary-text: #ffffff;
-      --button-outline-border: #1a6b2e;
-      
-      /* Icon Colors */
-      --icon-green: #1a6b2e;
-      --icon-alert: #ffc107;
     }
 
     /* Custom loading spinner */
@@ -102,57 +58,11 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* Skeleton loading animation */
-    .skeleton {
-      background: linear-gradient(90deg, var(--light-gray) 25%, var(--off-white) 50%, var(--light-gray) 75%);
-      background-size: 200% 100%;
-      animation: loading 1.5s infinite;
-    }
-
-    @keyframes loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    /* Status indicator animations */
-    .status-pulse {
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-
-    /* Card hover effects */
-    .card-hover {
-      transition: all 0.3s ease;
-    }
-
-    .card-hover:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(26, 107, 46, 0.15);
-    }
-
-    /* Camera analysis animations */
-    .camera-preview {
-      transition: all 0.3s ease;
-    }
-
-    .analysis-loading {
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-
     /* Mobile optimizations and touch improvements */
     * {
       -webkit-tap-highlight-color: rgba(26, 107, 46, 0.2);
     }
-    
+
     /* Safe area support for notched devices */
     body {
       padding-top: env(safe-area-inset-top);
@@ -165,9 +75,9 @@
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      touch-action: pan-y;
+      font-size: 16px;
     }
-    
+
     html {
       margin: 0;
       padding: 0;
@@ -176,84 +86,19 @@
       overflow-x: hidden;
       overflow-y: auto;
     }
-    
-    /* Better scrolling on mobile */
-    .scroll-container {
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      overflow-y: auto;
-      touch-action: pan-y;
-    }
-    
+
     /* Touch target improvements - minimum 44x44px */
     button, a, input, select {
       min-height: 44px;
       touch-action: manipulation;
     }
-    
-    /* Active state feedback for touch */
-    button:active, .card-hover:active {
-      transform: scale(0.98);
-      transition: transform 0.1s ease;
-    }
-    
-    /* Allow scrolling on all containers */
-    .app-background, .app-content, main, div {
-      touch-action: auto;
-    }
-    
-    /* Re-enable manipulation for interactive elements only */
-    button, a, input[type="button"], input[type="submit"], select {
-      touch-action: manipulation;
-    }
-    
-    /* Ensure modals are scrollable */
-    .fixed {
-      touch-action: auto;
-    }
-    
+
     /* Reduced motion support */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
-      }
-    }
-    
-    /* Mobile-specific styles */
-    @media (max-width: 768px) {
-      .camera-container {
-        margin: 0 -1rem;
-      }
-      
-      .camera-preview {
-        height: 200px;
-      }
-      
-      /* Hide desktop-only elements */
-      .desktop-only {
-        display: none !important;
-      }
-      
-      /* Stack layout on mobile */
-      .mobile-stack {
-        grid-template-columns: 1fr !important;
-      }
-      
-      /* Larger text for readability */
-      body {
-        font-size: 16px;
-      }
-      
-      /* Better spacing on mobile */
-      .mobile-spacing {
-        padding: 0.75rem !important;
-      }
-      
-      /* Full width buttons on mobile */
-      .mobile-full-button {
-        width: 100%;
       }
     }
 
@@ -267,8 +112,6 @@
       background-attachment: scroll;
       min-height: 100vh;
       min-height: 100dvh; /* Dynamic viewport height for mobile Safari */
-      touch-action: pan-y;
-      -webkit-overflow-scrolling: touch;
     }
 
     .app-background::before {
@@ -291,7 +134,6 @@
     .app-content {
       position: relative;
       z-index: 2;
-      -webkit-overflow-scrolling: touch;
     }
 
     @media (min-width: 1024px) {
@@ -304,7 +146,7 @@
 <body>
   <div id="root"></div>
   <script>
-    const { useState, useEffect, useMemo } = React;
+    const { useState, useEffect, useMemo, useRef, useCallback } = React;
     const html = htm.bind(React.createElement);
 
     // Service Worker Registration
@@ -397,804 +239,156 @@
              window.navigator.standalone === true;
     }
 
-    const statusStyles = {
-      'Not Started': 'bg-gray-100 text-gray-700 border-gray-300',
-      'Up Next': 'bg-blue-100 text-blue-800 border-blue-300',
-      'Up Next- 2nd Pass': 'bg-indigo-100 text-indigo-800 border-indigo-300',
-      'Up Next- 3rd Pass': 'bg-purple-100 text-purple-800 border-purple-300',
-      'Up Next- 4th Pass': 'bg-violet-100 text-violet-800 border-violet-300',
-      'Up Next- 5th Pass': 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300',
-      'Up Next- 6th Pass': 'bg-pink-100 text-pink-800 border-pink-300',
-      'Up Next- 7th Pass': 'bg-rose-100 text-rose-800 border-rose-300',
-      'Up Next- 8th Pass': 'bg-red-100 text-red-800 border-red-300',
-      'In Progress': 'bg-yellow-100 text-yellow-800 border-yellow-300 status-pulse',
-      'In Progress 2nd Pass': 'bg-orange-100 text-orange-800 border-orange-300 status-pulse',
-      'In Progress 3rd Pass': 'bg-amber-100 text-amber-800 border-amber-300 status-pulse',
-      'In Progress 4th Pass': 'bg-lime-100 text-lime-800 border-lime-300 status-pulse',
-      'In Progress 5th Pass': 'bg-emerald-100 text-emerald-800 border-emerald-300 status-pulse',
-      'In Progress 6th Pass': 'bg-teal-100 text-teal-800 border-teal-300 status-pulse',
-      'In Progress 7th Pass': 'bg-cyan-100 text-cyan-800 border-cyan-300 status-pulse',
-      'In Progress 8th Pass': 'bg-sky-100 text-sky-800 border-sky-300 status-pulse',
-      'Completed 1st Pass': 'bg-green-100 text-green-800 border-green-300',
-      'Completed 2nd Pass': 'bg-emerald-100 text-emerald-800 border-emerald-300',
-      'Completed 3rd Pass': 'bg-teal-100 text-teal-800 border-teal-300',
-      'Completed 4th Pass': 'bg-cyan-100 text-cyan-800 border-cyan-300',
-      'Completed 5th Pass': 'bg-blue-100 text-blue-800 border-blue-300',
-      'Completed 6th Pass': 'bg-indigo-100 text-indigo-800 border-indigo-300',
-      'Completed 7th Pass': 'bg-purple-100 text-purple-800 border-purple-300',
-      'Completed 8th Pass': 'bg-violet-100 text-violet-800 border-violet-300',
-      // Final Pass statuses
-      'Final Pass Up Next': 'bg-amber-100 text-amber-800 border-amber-300',
-      'Final Pass In Progress': 'bg-orange-200 text-orange-900 border-orange-400 status-pulse',
-      'Final Pass Completed': 'bg-emerald-200 text-emerald-900 border-emerald-400',
-      // Legacy support - keeping old "Completed" for backward compatibility
-      Completed: 'bg-green-100 text-green-800 border-green-300',
+    // How often the page re-checks street status while it is open. Every refresh
+    // costs Airtable API calls, so refreshes are skipped while the tab is hidden.
+    const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
+
+    /**
+     * Status helpers
+     *
+     * Airtable statuses look like "Not Started", "Up Next- 1st Pass",
+     * "In Progress- 2nd Pass", "Completed 3rd Pass" or "Final Pass Up Next".
+     * parseStatus() reduces each one to a stage plus the pass it refers to, so the
+     * page can show a handful of consistent labels instead of dozens of variants.
+     */
+    const STAGES = {
+      'in-progress': { label: 'In progress', badge: 'bg-amber-100 text-amber-900 ring-amber-300', dot: 'bg-amber-500' },
+      'up-next': { label: 'Up next', badge: 'bg-sky-100 text-sky-900 ring-sky-300', dot: 'bg-sky-500' },
+      completed: { label: 'Completed', badge: 'bg-green-100 text-green-900 ring-green-300', dot: 'bg-green-600' },
+      partial: { label: 'Partly completed', badge: 'bg-lime-50 text-lime-900 ring-lime-300', dot: 'bg-lime-500' },
+      'not-started': { label: 'Not started', badge: 'bg-gray-100 text-gray-700 ring-gray-300', dot: 'bg-gray-400' },
+      unknown: { label: 'Unknown', badge: 'bg-gray-100 text-gray-700 ring-gray-300', dot: 'bg-gray-400' },
     };
 
-    const statusIcons = {
-      'Not Started': '⏳',
-      'Up Next': '🔜',
-      'Up Next- 2nd Pass': '🔜',
-      'Up Next- 3rd Pass': '🔜',
-      'Up Next- 4th Pass': '🔜',
-      'Up Next- 5th Pass': '🔜',
-      'Up Next- 6th Pass': '🔜',
-      'Up Next- 7th Pass': '🔜',
-      'Up Next- 8th Pass': '🔜',
-      'In Progress': '🔄',
-      'In Progress 2nd Pass': '🔄',
-      'In Progress 3rd Pass': '🔄',
-      'In Progress 4th Pass': '🔄',
-      'In Progress 5th Pass': '🔄',
-      'In Progress 6th Pass': '🔄',
-      'In Progress 7th Pass': '🔄',
-      'In Progress 8th Pass': '🔄',
-      'Completed 1st Pass': '✅',
-      'Completed 2nd Pass': '✅',
-      'Completed 3rd Pass': '✅',
-      'Completed 4th Pass': '✅',
-      'Completed 5th Pass': '✅',
-      'Completed 6th Pass': '✅',
-      'Completed 7th Pass': '✅',
-      'Completed 8th Pass': '✅',
-      // Final Pass statuses
-      'Final Pass Up Next': '🏁',
-      'Final Pass In Progress': '🏁',
-      'Final Pass Completed': '🏆',
-      // Legacy support
-      Completed: '✅',
+    const ORDINAL_WORDS = {
+      first: 1, second: 2, third: 3, fourth: 4, fifth: 5, sixth: 6, seventh: 7, eighth: 8,
     };
 
-    function normalizeStatus(value) {
-      if (!value) {
-        return 'Unknown';
+    function parseStatus(value) {
+      const raw = typeof value === 'string' ? value.trim() : '';
+      const text = raw.toLowerCase();
+
+      let pass = null;
+      if (text.includes('final')) {
+        pass = 'final';
+      } else {
+        const digits = text.match(/(\d+)\s*(?:st|nd|rd|th)/);
+        const word = text.match(/\b(first|second|third|fourth|fifth|sixth|seventh|eighth)\b/);
+        if (digits) {
+          pass = parseInt(digits[1], 10);
+        } else if (word) {
+          pass = ORDINAL_WORDS[word[1]];
+        }
       }
 
-      const normalized = value.trim().toLowerCase();
-      
-      
-      switch (normalized) {
-        case 'not started':
-          return 'Not Started';
-        case 'up next':
-        case 'upnext':
-        case 'up-next':
-          return 'Up Next';
-        case 'up next- 2nd pass':
-        case 'up next- 2nd':
-        case 'up next 2nd pass':
-        case 'up next 2nd':
-          return 'Up Next- 2nd Pass';
-        case 'up next- 3rd pass':
-        case 'up next- 3rd':
-        case 'up next 3rd pass':
-        case 'up next 3rd':
-          return 'Up Next- 3rd Pass';
-        case 'up next- 4th pass':
-        case 'up next- 4th':
-        case 'up next 4th pass':
-        case 'up next 4th':
-          return 'Up Next- 4th Pass';
-        case 'up next- 5th pass':
-        case 'up next- 5th':
-        case 'up next 5th pass':
-        case 'up next 5th':
-          return 'Up Next- 5th Pass';
-        case 'up next- 6th pass':
-        case 'up next- 6th':
-        case 'up next 6th pass':
-        case 'up next 6th':
-          return 'Up Next- 6th Pass';
-        case 'up next- 7th pass':
-        case 'up next- 7th':
-        case 'up next 7th pass':
-        case 'up next 7th':
-          return 'Up Next- 7th Pass';
-        case 'up next- 8th pass':
-        case 'up next- 8th':
-        case 'up next 8th pass':
-        case 'up next 8th':
-          return 'Up Next- 8th Pass';
-        case 'in progress':
-        case 'in-progress':
-        case 'in progess':
-        case 'in proggress':
-          return 'In Progress';
-        case 'in progress 2nd pass':
-        case 'in progress 2nd':
-        case 'in progress- 2nd pass':
-        case 'in-progress 2nd pass':
-        case 'in-progress 2nd':
-          return 'In Progress 2nd Pass';
-        case 'in progress 3rd pass':
-        case 'in progress 3rd':
-        case 'in progress- 3rd pass':
-        case 'in-progress 3rd pass':
-        case 'in-progress 3rd':
-          return 'In Progress 3rd Pass';
-        case 'in progress 4th pass':
-        case 'in progress 4th':
-        case 'in progress- 4th pass':
-        case 'in-progress 4th pass':
-        case 'in-progress 4th':
-          return 'In Progress 4th Pass';
-        case 'in progress 5th pass':
-        case 'in progress 5th':
-        case 'in progress- 5th pass':
-        case 'in-progress 5th pass':
-        case 'in-progress 5th':
-          return 'In Progress 5th Pass';
-        case 'in progress 6th pass':
-        case 'in progress 6th':
-        case 'in progress- 6th pass':
-        case 'in-progress 6th pass':
-        case 'in-progress 6th':
-          return 'In Progress 6th Pass';
-        case 'in progress 7th pass':
-        case 'in progress 7th':
-        case 'in progress- 7th pass':
-        case 'in-progress 7th pass':
-        case 'in-progress 7th':
-          return 'In Progress 7th Pass';
-        case 'in progress 8th pass':
-        case 'in progress 8th':
-        case 'in progress- 8th pass':
-        case 'in-progress 8th pass':
-        case 'in-progress 8th':
-          return 'In Progress 8th Pass';
-        case 'completed 1st pass':
-        case 'completed first pass':
-        case '1st pass':
-        case 'first pass':
-          return 'Completed 1st Pass';
-        case 'completed 2nd pass':
-        case 'completed second pass':
-        case '2nd pass':
-        case 'second pass':
-          return 'Completed 2nd Pass';
-        case 'completed 3rd pass':
-        case 'completed third pass':
-        case '3rd pass':
-        case 'third pass':
-          return 'Completed 3rd Pass';
-        case 'completed 4th pass':
-        case 'completed fourth pass':
-        case '4th pass':
-        case 'fourth pass':
-          return 'Completed 4th Pass';
-        case 'completed 5th pass':
-        case 'completed fifth pass':
-        case '5th pass':
-        case 'fifth pass':
-          return 'Completed 5th Pass';
-        case 'completed 6th pass':
-        case 'completed sixth pass':
-        case '6th pass':
-        case 'sixth pass':
-          return 'Completed 6th Pass';
-        case 'completed 7th pass':
-        case 'completed seventh pass':
-        case '7th pass':
-        case 'seventh pass':
-          return 'Completed 7th Pass';
-        case 'completed 8th pass':
-        case 'completed eighth pass':
-        case '8th pass':
-        case 'eighth pass':
-          return 'Completed 8th Pass';
-        case 'completed':
-        case 'complete':
-          return 'Completed';
-        // Final Pass statuses
-        case 'final pass up next':
-        case 'final pass upnext':
-        case 'final pass- up next':
-        case 'final-pass up next':
-        case 'finalpass up next':
-          return 'Final Pass Up Next';
-        case 'final pass in progress':
-        case 'final pass inprogress':
-        case 'final pass- in progress':
-        case 'final-pass in progress':
-        case 'finalpass in progress':
-          return 'Final Pass In Progress';
-        case 'final pass completed':
-        case 'final pass complete':
-        case 'final pass- completed':
-        case 'final-pass completed':
-        case 'finalpass completed':
-        case 'final pass done':
-          return 'Final Pass Completed';
-        default:
-          return value;
+      let stage = 'unknown';
+      if (/not\s*started/.test(text)) {
+        stage = 'not-started';
+      } else if (/\bin[\s-]*pro/.test(text)) {
+        stage = 'in-progress';
+      } else if (/up[\s-]*next/.test(text)) {
+        stage = 'up-next';
+      } else if (/complete|done/.test(text) || pass !== null) {
+        // A bare "2nd Pass" has always meant that pass is completed.
+        stage = 'completed';
       }
+
+      return { stage, pass, raw };
     }
 
-    // Helper function to check if a status is any type of completed status
-    function isCompletedStatus(status) {
-      const normalized = normalizeStatus(status);
-      return normalized === 'Completed' || 
-             normalized === 'Completed 1st Pass' || 
-             normalized === 'Completed 2nd Pass' || 
-             normalized === 'Completed 3rd Pass' || 
-             normalized === 'Completed 4th Pass' ||
-             normalized === 'Completed 5th Pass' ||
-             normalized === 'Completed 6th Pass' ||
-             normalized === 'Completed 7th Pass' ||
-             normalized === 'Completed 8th Pass' ||
-             normalized === 'Final Pass Completed';
+    // Orders passes so the final pass sorts after every numbered pass.
+    function passRank(pass) {
+      if (pass === 'final') return 99;
+      return typeof pass === 'number' ? pass : 0;
     }
 
-    function StatusBadge({ status = 'Unknown' }) {
-      const normalizedStatus = normalizeStatus(status);
-      
-      // Map to abbreviated labels with single checkmark for completed passes
-      const abbreviatedLabels = {
-        'Not Started': 'Not Started',
-        'Up Next': 'Up Next',
-        'Up Next- 2nd Pass': 'Up Next 2nd',
-        'Up Next- 3rd Pass': 'Up Next 3rd',
-        'Up Next- 4th Pass': 'Up Next 4th',
-        'Up Next- 5th Pass': 'Up Next 5th',
-        'Up Next- 6th Pass': 'Up Next 6th',
-        'Up Next- 7th Pass': 'Up Next 7th',
-        'Up Next- 8th Pass': 'Up Next 8th',
-        'In Progress': 'In Progress',
-        'In Progress 2nd Pass': 'In Progress 2nd',
-        'In Progress 3rd Pass': 'In Progress 3rd',
-        'In Progress 4th Pass': 'In Progress 4th',
-        'In Progress 5th Pass': 'In Progress 5th',
-        'In Progress 6th Pass': 'In Progress 6th',
-        'In Progress 7th Pass': 'In Progress 7th',
-        'In Progress 8th Pass': 'In Progress 8th',
-        'Completed 1st Pass': '1st Pass ✅',
-        'Completed 2nd Pass': '2nd Pass ✅',
-        'Completed 3rd Pass': '3rd Pass ✅',
-        'Completed 4th Pass': '4th Pass ✅',
-        'Completed 5th Pass': '5th Pass ✅',
-        'Completed 6th Pass': '6th Pass ✅',
-        'Completed 7th Pass': '7th Pass ✅',
-        'Completed 8th Pass': '8th Pass ✅',
-        'Completed': 'Completed ✅',
-        // Final Pass statuses
-        'Final Pass Up Next': 'Final Pass 🏁',
-        'Final Pass In Progress': 'Final Pass 🏁',
-        'Final Pass Completed': 'Final Pass 🏆'
-      };
-      
-      const label = abbreviatedLabels[normalizedStatus] ?? normalizedStatus;
-      const baseClasses =
-        'inline-flex items-center rounded-full px-3 py-1 text-sm font-medium border whitespace-nowrap';
-      const variant = statusStyles[normalizedStatus] ?? 'bg-gray-100 text-gray-700 border-gray-300';
-
-
-      return html`<span className="${baseClasses} ${variant}">
-        ${label}
-      </span>`;
+    function passLabel(pass) {
+      if (pass === 'final') return 'Final pass';
+      if (typeof pass !== 'number') return null;
+      const suffix = pass === 1 ? 'st' : pass === 2 ? 'nd' : pass === 3 ? 'rd' : 'th';
+      return `${pass}${suffix} pass`;
     }
 
-    function LoadingSpinner() {
-      return html`<div className="flex flex-col items-center justify-center py-8">
-        <div className="loading-spinner mb-4"></div>
-        <p className="text-sm text-gray-600">Loading collection routes...</p>
-      </div>`;
+    function statusLabel({ stage, pass, raw }) {
+      const base = stage === 'unknown' ? raw || STAGES.unknown.label : STAGES[stage].label;
+      const passText = passLabel(pass);
+      return passText ? `${base} · ${passText}` : base;
     }
 
-    function SkeletonCard() {
-      return html`<div className="animate-pulse">
-        <div className="skeleton h-4 w-3/4 mb-2 rounded"></div>
-        <div className="skeleton h-3 w-1/2 mb-3 rounded"></div>
-        <div className="skeleton h-6 w-20 rounded-full"></div>
-      </div>`;
-    }
-
-    function SkeletonList() {
-      return html`<div className="space-y-3">
-        ${Array.from({ length: 5 }, (_, i) => html`<div key=${i} className="p-4 border rounded-lg">
-          <${SkeletonCard} />
-        </div>`)}
-      </div>`;
-    }
-
-    function RouteModal({ record, isOpen, onClose }) {
-      // Email Alert Subscription Form State
-      const [formData, setFormData] = useState({
-        subscriberName: '',
-        email: '',
-        optInConfirmed: false
-      });
-      const [isSubmitting, setIsSubmitting] = useState(false);
-      const [submitError, setSubmitError] = useState(null);
-      const [submitSuccess, setSubmitSuccess] = useState(false);
-
-      // Form submission handler
-      const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        // Validation
-        if (!formData.subscriberName.trim()) {
-          alert('Please enter your name');
-          return;
-        }
-        
-        if (!formData.email.trim()) {
-          alert('Please enter your email address');
-          return;
-        }
-        
-        if (!formData.optInConfirmed) {
-          alert('Please confirm you want to receive email alerts');
-          return;
-        }
-        
-        setIsSubmitting(true);
-        setSubmitError(null);
-        setSubmitSuccess(false);
-        
-        try {
-          const response = await fetch('/api/subscribe-sms', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              subscriberName: formData.subscriberName,
-              email: formData.email,
-              streetId: record.id
-            })
-          });
-          
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to subscribe');
-          }
-          
-          // Success!
-          setSubmitSuccess(true);
-          setFormData({
-            subscriberName: '',
-            email: '',
-            optInConfirmed: false
-          });
-          
-          // Close modal after 2 seconds
-          setTimeout(() => {
-            onClose();
-          }, 2000);
-          
-        } catch (error) {
-          console.error('Subscription error:', error);
-          setSubmitError('Failed to subscribe. Please try again.');
-        } finally {
-          setIsSubmitting(false);
-        }
-      };
-
-      if (!isOpen || !record) return null;
-
-      return html`
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 pt-16 z-[100]" style=${{ touchAction: 'none' }}>
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto relative z-[101]" style=${{ touchAction: 'pan-y' }}>
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Route Details</h3>
-              <button
-                onClick=${onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-            
-            <div className="p-4 space-y-4">
-              <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-lg font-semibold text-green-800">${record.street}</h4>
-                  <${StatusBadge} status=${record.status || 'Unknown'} />
-                </div>
-                <p className="text-sm text-green-700">Route ${record.routeNumber || '--'}</p>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                  <dt className="text-sm font-medium text-gray-600 flex items-center">
-                    <span className="mr-2">📅</span>
-                    Date Started
-                  </dt>
-                  <dd className="text-sm font-medium text-gray-900">
-                    ${formatDate(record.dateStarted)}
-                  </dd>
-                </div>
-                
-                <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                  <dt className="text-sm font-medium text-gray-600 flex items-center">
-                    <span className="mr-2">✅</span>
-                    Date Completed
-                  </dt>
-                  <dd className="text-sm font-medium text-gray-900">
-                    ${formatDate(record.dateCompleted)}
-                  </dd>
-                </div>
-                
-                ${record.notes && record.notes.trim() && html`
-                  <div className="py-2">
-                    <dt className="text-sm font-medium text-gray-600 flex items-center mb-2">
-                      <span className="mr-2">📝</span>
-                      Notes
-                    </dt>
-                    <dd className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg border">
-                      ${record.notes}
-                    </dd>
-                  </div>
-                `}
-              </div>
-
-              <!-- Email Alert Subscription Section -->
-              <div className="border-t border-gray-200 pt-4 mt-4">
-                <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border border-green-200 mb-4">
-                  <div className="flex items-start space-x-3">
-                    <span className="text-2xl">📧</span>
-                    <div className="flex-1">
-                      <h5 className="text-sm font-semibold text-gray-900 mb-1">
-                        Get Email Alerts
-                      </h5>
-                      <p className="text-xs text-gray-600 mb-3">
-                        Receive email updates when ${record.street}'s leaf pickup status changes.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                ${submitSuccess ? html`
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start space-x-3 mb-4">
-                    <span className="text-xl">✅</span>
-                    <div>
-                      <p className="text-sm font-medium text-green-800">Successfully subscribed!</p>
-                      <p className="text-xs text-green-600 mt-1">You'll receive email alerts for ${record.street}</p>
-                    </div>
-                  </div>
-                ` : html`
-                  <form onSubmit=${handleSubmit} className="space-y-4">
-                    ${submitError && html`
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
-                        <span className="text-xl">⚠️</span>
-                        <div>
-                          <p className="text-sm font-medium text-red-800">Error</p>
-                          <p className="text-xs text-red-600 mt-1">${submitError}</p>
-                        </div>
-                      </div>
-                    `}
-                    
-                    <div>
-                      <label htmlFor="subscriberName" className="block text-sm font-medium text-gray-700 mb-1">
-                        Your Name *
-                      </label>
-                      <input
-                        id="subscriberName"
-                        type="text"
-                        placeholder="John Doe"
-                        value=${formData.subscriberName}
-                        onInput=${(e) => setFormData({ ...formData, subscriberName: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                        Email Address *
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        placeholder="john@example.com"
-                        value=${formData.email}
-                        onInput=${(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        required
-                      />
-                    </div>
-                    
-                    <div className="flex items-start space-x-2">
-                      <input
-                        id="optInConfirmed"
-                        type="checkbox"
-                        checked=${formData.optInConfirmed}
-                        onChange=${(e) => setFormData({ ...formData, optInConfirmed: e.target.checked })}
-                        className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                        required
-                      />
-                      <label htmlFor="optInConfirmed" className="text-xs text-gray-600">
-                        I agree to receive email alerts about leaf pickup status for ${record.street}. To opt out of this service, email jshevel@cityofwestlake.org
-                      </label>
-                    </div>
-                    
-                    <button
-                      type="submit"
-                      disabled=${isSubmitting}
-                      className="w-full px-4 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-400 transition"
-                    >
-                      ${isSubmitting ? 'Subscribing...' : 'Subscribe to Alerts'}
-                    </button>
-                  </form>
-                `}
-              </div>
-              
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-xs text-blue-700 flex items-center">
-                  <span className="mr-2">ℹ️</span>
-                  This information reflects the most recent update from the Westlake Service Department.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function isHtmlReportString(value) {
-      if (typeof value !== 'string') {
-        return false;
-      }
-
-      const trimmed = value.trim();
-      if (!trimmed) {
-        return false;
-      }
-
-      if (/^<!DOCTYPE\s+html>/i.test(trimmed) || /^<html[\s>]/i.test(trimmed) || /<body[\s>]/i.test(trimmed)) {
-        return true;
-      }
-
-      return /<\/(article|section|main|header|footer|div|p|ul|ol|li|table|thead|tbody|tr|td|h[1-6])>/i.test(trimmed);
-    }
-
-    function normalizeReportToText(value) {
-      if (value === null || value === undefined) {
-        return '';
-      }
-
-      if (typeof value === 'string') {
-        return value;
-      }
-
-      if (Array.isArray(value)) {
-        return value.map(normalizeReportToText).filter(Boolean).join('\n');
-      }
-
-      if (typeof value === 'object') {
-        const htmlCandidateKeys = ['html', 'reportHtml', 'reportContent', 'content', 'body', 'markup', 'report'];
-        for (const key of htmlCandidateKeys) {
-          if (typeof value[key] === 'string' && isHtmlReportString(value[key])) {
-            return value[key];
-          }
-        }
-
-        const parts = Object.entries(value)
-          .map(([key, val]) => {
-            const normalized = normalizeReportToText(val).trim();
-            if (!normalized) {
-              return '';
-            }
-            return `${key}: ${normalized}`;
-          })
-          .filter(Boolean);
-
-        if (parts.length > 0) {
-          return parts.join('\n');
-        }
-
-        try {
-          return JSON.stringify(value, null, 2);
-        } catch (error) {
-          return String(value);
-        }
-      }
-
-      return String(value);
-    }
-
-    function extractHtmlReportMarkup(reportString) {
-      const stripScripts = (input) =>
-        (input || '').replace(/<script[\s\S]*?<\/script>/gi, '');
-
-      const bulletRemovalCSS = `
-        <style>
-          .list-item,
-          .action-item,
-          ul,
-          ol {
-            list-style: none !important;
-            padding-left: 0 !important;
-            margin-left: 0 !important;
-          }
-        </style>
-      `;
-
-      const cleaned = reportString.replace(/\r\n/g, '\n');
-      const assembleOutput = (styles, body) => {
-        const sanitizedBody = body.replace(/##\s+[^\n<]+/g, '');
-        const combined = `${styles}\n${bulletRemovalCSS}\n${sanitizedBody}`.trim();
-        return stripScripts(combined);
-      };
-
-      if (typeof DOMParser !== 'undefined') {
-        try {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(cleaned, 'text/html');
-          if (doc) {
-            const headStyles = Array.from(doc.querySelectorAll('style'))
-              .map((node) => node.outerHTML)
-              .join('\n');
-            const bodyMarkup =
-              (doc.body && doc.body.innerHTML && doc.body.innerHTML.trim()) || cleaned;
-            return assembleOutput(headStyles, bodyMarkup);
-          }
-        } catch (_error) {
-          // Fallback to regex parsing below
-        }
-      }
-
-      const bodyMatch = cleaned.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-      const headMatch = cleaned.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
-
-      const styles = headMatch && headMatch[1]
-        ? (headMatch[1].match(/<style[\s\S]*?<\/style>/gi) || []).join('\n')
-        : '';
-
-      const bodyContent = bodyMatch && bodyMatch[1] ? bodyMatch[1] : cleaned;
-
-      return assembleOutput(styles, bodyContent);
-    }
-
-    function extractHtmlMarkupFromContent(content) {
-      if (content === null || content === undefined) {
-        return null;
-      }
-
-      if (typeof content === 'string') {
-        return isHtmlReportString(content) ? extractHtmlReportMarkup(content) : null;
-      }
-
-      if (Array.isArray(content)) {
-        for (const item of content) {
-          const markup = extractHtmlMarkupFromContent(item);
-          if (markup) {
-            return markup;
-          }
-        }
-        return null;
-      }
-
-      if (typeof content === 'object') {
-        const htmlCandidateKeys = ['html', 'reportHtml', 'reportContent', 'content', 'body', 'markup', 'report'];
-        for (const key of htmlCandidateKeys) {
-          if (typeof content[key] === 'string' && isHtmlReportString(content[key])) {
-            return extractHtmlReportMarkup(content[key]);
-          }
-        }
-
-        for (const value of Object.values(content)) {
-          const markup = extractHtmlMarkupFromContent(value);
-          if (markup) {
-            return markup;
-          }
-        }
-      }
-
-      return null;
+    function stageOf(record) {
+      return parseStatus(record.status).stage;
     }
 
     /**
-     * Sanitize HTML content to prevent XSS attacks
-     * @param {string} htmlString - Raw HTML string
-     * @returns {string} Sanitized HTML string
+     * Works out one status for a whole route: in progress beats up next, which
+     * beats completed. "done" counts the streets finished for the pass the route
+     * is currently on, so the progress bar restarts with each new pass.
      */
-    function sanitizeHtml(htmlString) {
-      if (typeof DOMPurify === 'undefined') {
-        console.error('DOMPurify not loaded - stripping all HTML');
-        return htmlString.replace(/<[^>]*>/g, '');
+    function summarizeRoute(streets) {
+      const statuses = streets.map((street) => parseStatus(street.status));
+      const withStage = (stage) => statuses.filter((status) => status.stage === stage);
+      const highestPass = (list) =>
+        list.reduce((best, status) => (passRank(status.pass) > passRank(best) ? status.pass : best), null);
+      const completed = withStage('completed');
+
+      let stage = 'not-started';
+      let pass = null;
+      if (withStage('in-progress').length > 0) {
+        stage = 'in-progress';
+        pass = highestPass(withStage('in-progress'));
+      } else if (withStage('up-next').length > 0) {
+        stage = 'up-next';
+        pass = highestPass(withStage('up-next'));
+      } else if (completed.length > 0 && completed.length === statuses.length) {
+        stage = 'completed';
+        // Every street has finished at least the lowest completed pass.
+        pass = completed.reduce(
+          (lowest, status) => (passRank(status.pass) < passRank(lowest) ? status.pass : lowest),
+          completed[0].pass
+        );
+      } else if (completed.length > 0) {
+        stage = 'partial';
       }
-      
-      // Configure DOMPurify to allow safe HTML elements
-      const cleanHtml = DOMPurify.sanitize(htmlString, {
-        ALLOWED_TAGS: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'ul', 'ol', 'li', 'strong', 'em', 'u', 'span', 'div', 'article', 'section'],
-        ALLOWED_ATTR: ['class', 'style'],
-        KEEP_CONTENT: true,
-        ALLOW_DATA_ATTR: false
-      });
-      
-      return cleanHtml;
+
+      const done =
+        stage === 'in-progress' || stage === 'up-next'
+          ? completed.filter((status) => passRank(status.pass) >= passRank(pass)).length
+          : completed.length;
+
+      return { stage, pass, done, total: streets.length };
     }
 
-    function renderReportContent(content) {
-      const htmlMarkup = extractHtmlMarkupFromContent(content);
-      if (htmlMarkup) {
-        // SECURITY: Sanitize HTML before rendering to prevent XSS
-        const sanitizedHtml = sanitizeHtml(htmlMarkup);
-        return html`<div
-          className="prose prose-sm max-w-none"
-          style=${{ listStyleType: 'none', paddingLeft: 0, marginLeft: 0 }}
-          dangerouslySetInnerHTML=${{ __html: sanitizedHtml }}
-        ></div>`;
-      }
-
-      const reportString = normalizeReportToText(content).trim();
-      if (!reportString || isHtmlReportString(reportString)) {
-        return null;
-      }
-
-      const lines = reportString
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter(Boolean);
-
-      if (lines.length === 0) {
-        return null;
-      }
-
-      const groups = [];
-      lines.forEach((line) => {
-        const isBullet = /^[-*•]/.test(line);
-        const text = line.replace(/^[-*•]\s*/, '').trim();
-        if (!text) {
-          return;
-        }
-
-        const lastGroup = groups[groups.length - 1];
-
-        if (isBullet) {
-          if (lastGroup && lastGroup.type === 'list') {
-            lastGroup.items.push(text);
-          } else {
-            groups.push({ type: 'list', items: [text] });
-          }
-        } else {
-          if (lastGroup && lastGroup.type === 'text') {
-            lastGroup.text = `${lastGroup.text} ${text}`.trim();
-          } else {
-            groups.push({ type: 'text', text });
-          }
-        }
-      });
-
-      return html`<div className="space-y-3 text-sm text-gray-700 leading-relaxed">
-        ${groups.map((group, index) => {
-          if (group.type === 'list') {
-            return html`<ul key=${`list-${index}`} className="list-disc list-inside space-y-1 text-gray-700">
-              ${group.items.map((item, itemIndex) => html`<li key=${`item-${index}-${itemIndex}`}>${item}</li>`)}
-            </ul>`;
-          }
-
-          return html`<p key=${`text-${index}`}>${group.text}</p>`;
-        })}
-      </div>`;
+    function compareRouteNumbers(a, b) {
+      const aNum = parseInt(a, 10);
+      const bNum = parseInt(b, 10);
+      return (Number.isNaN(aNum) ? Infinity : aNum) - (Number.isNaN(bNum) ? Infinity : bNum);
     }
 
-    function formatDate(value) {
+    function groupByRoute(records) {
+      const groups = new Map();
+      records.forEach((record) => {
+        const routeNumber = record.routeNumber ? String(record.routeNumber) : 'Unknown';
+        if (!groups.has(routeNumber)) {
+          groups.set(routeNumber, []);
+        }
+        groups.get(routeNumber).push(record);
+      });
+
+      return Array.from(groups.entries())
+        .sort(([a], [b]) => compareRouteNumbers(a, b))
+        .map(([routeNumber, streets]) => ({
+          routeNumber,
+          streets: streets.sort((a, b) => a.street.localeCompare(b.street)),
+        }));
+    }
+
+    function plural(count, word) {
+      return `${count} ${count === 1 ? word : `${word}s`}`;
+    }
+
+    function formatDate(value, fallback = '--') {
       if (!value) {
-        return '--';
+        return fallback;
       }
 
       // Handle date strings more explicitly to avoid timezone issues
@@ -1227,6 +421,407 @@
       );
     }
 
+    /**
+     * Small shared pieces
+     */
+    const ChevronRightIcon = html`<svg className="h-4 w-4 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+    </svg>`;
+
+    const CloseIcon = html`<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+    </svg>`;
+
+    const InfoIcon = html`<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 16v-4m0-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>`;
+
+    const SearchIcon = html`<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"></path>
+    </svg>`;
+
+    function Badge({ stage, label }) {
+      const style = STAGES[stage] ?? STAGES.unknown;
+      return html`<span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${style.badge}">
+        <span className="h-2 w-2 rounded-full ${style.dot} ${stage === 'in-progress' ? 'animate-pulse' : ''}" aria-hidden="true"></span>
+        ${label}
+      </span>`;
+    }
+
+    function StatusBadge({ status }) {
+      const parsed = parseStatus(status);
+      return html`<${Badge} stage=${parsed.stage} label=${statusLabel(parsed)} />`;
+    }
+
+    function Card({ children, className = '' }) {
+      return html`<section className="rounded-2xl bg-white/95 shadow-lg backdrop-blur-sm ${className}">
+        ${children}
+      </section>`;
+    }
+
+    function CardHeader({ title, detail }) {
+      return html`<div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-5 pb-3 pt-5 md:px-6">
+        <h2 className="text-lg font-semibold text-gray-900">${title}</h2>
+        ${detail ? html`<p className="text-sm text-gray-500">${detail}</p>` : null}
+      </div>`;
+    }
+
+    function StreetRow({ street, showRoute = false, onSelect }) {
+      return html`<button
+        type="button"
+        onClick=${() => onSelect(street)}
+        className="flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-green-50 focus:bg-green-50 focus:outline-none md:px-6"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-gray-900">${street.street}</p>
+          ${showRoute ? html`<p className="text-sm text-gray-500">Route ${street.routeNumber || '--'}</p>` : null}
+        </div>
+        <${StatusBadge} status=${street.status} />
+        ${ChevronRightIcon}
+      </button>`;
+    }
+
+    function LoadingSpinner() {
+      return html`<div className="flex flex-col items-center justify-center py-12">
+        <div className="loading-spinner mb-4"></div>
+        <p className="text-sm text-gray-600">Loading pickup status...</p>
+      </div>`;
+    }
+
+    /**
+     * Modal: a bottom sheet on phones and a centered dialog on larger screens.
+     * Closes on Escape, the close button, or a tap outside the panel.
+     */
+    function Modal({ isOpen, onClose, title, subtitle, size = 'md', children }) {
+      const panelRef = useRef(null);
+      const onCloseRef = useRef(onClose);
+      onCloseRef.current = onClose;
+
+      useEffect(() => {
+        if (!isOpen) return undefined;
+
+        const handleKeyDown = (event) => {
+          if (event.key === 'Escape') {
+            onCloseRef.current();
+          }
+        };
+        // The page scrolls on <html>, so lock that while the modal is open.
+        const root = document.documentElement;
+        const previousOverflow = root.style.overflow;
+        document.addEventListener('keydown', handleKeyDown);
+        root.style.overflow = 'hidden';
+        panelRef.current?.focus({ preventScroll: true });
+
+        return () => {
+          document.removeEventListener('keydown', handleKeyDown);
+          root.style.overflow = previousOverflow;
+        };
+      }, [isOpen]);
+
+      if (!isOpen) return null;
+
+      return html`
+        <div
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-black/50 sm:items-center sm:p-4"
+          onClick=${onClose}
+        >
+          <div
+            ref=${panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
+            tabIndex="-1"
+            onClick=${(event) => event.stopPropagation()}
+            className="relative w-full ${size === 'lg' ? 'sm:max-w-3xl' : 'sm:max-w-lg'} max-h-[90vh] overflow-y-auto rounded-t-2xl bg-white shadow-xl focus:outline-none sm:rounded-2xl"
+            style=${{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          >
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-gray-100 bg-white px-5 py-4">
+              <div className="min-w-0">
+                <h2 id="modal-title" className="text-lg font-semibold text-gray-900">${title}</h2>
+                ${subtitle ? html`<p className="mt-0.5 text-sm text-gray-500">${subtitle}</p>` : null}
+              </div>
+              <button
+                type="button"
+                onClick=${onClose}
+                aria-label="Close"
+                className="-mr-2 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+              >
+                ${CloseIcon}
+              </button>
+            </div>
+            <div className="px-5 py-5">
+              ${children}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /**
+     * StreetModal: status details for one street plus the email alert sign-up.
+     */
+    function StreetModal({ street, onClose }) {
+      const [formData, setFormData] = useState({
+        subscriberName: '',
+        email: '',
+        optInConfirmed: false
+      });
+      const [isSubmitting, setIsSubmitting] = useState(false);
+      const [submitError, setSubmitError] = useState(null);
+      const [submitSuccess, setSubmitSuccess] = useState(false);
+
+      const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        if (!formData.subscriberName.trim() || !formData.email.trim()) {
+          setSubmitError('Please enter your name and email address.');
+          return;
+        }
+
+        if (!formData.optInConfirmed) {
+          setSubmitError('Please check the box to agree to receive email alerts.');
+          return;
+        }
+
+        setIsSubmitting(true);
+        setSubmitError(null);
+
+        try {
+          const response = await fetch('/api/subscribe-sms', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              subscriberName: formData.subscriberName,
+              email: formData.email,
+              streetId: street.id
+            })
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Failed to subscribe');
+          }
+
+          setSubmitSuccess(true);
+        } catch (error) {
+          console.error('Subscription error:', error);
+          setSubmitError('We could not sign you up just now. Please try again.');
+        } finally {
+          setIsSubmitting(false);
+        }
+      };
+
+      if (!street) return null;
+
+      const notes = street.notes && street.notes.trim();
+      const inputClasses =
+        'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-base text-gray-900 placeholder:text-gray-400 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-600/30';
+
+      return html`
+        <${Modal}
+          isOpen=${true}
+          onClose=${onClose}
+          title=${street.street}
+          subtitle=${`Route ${street.routeNumber || '--'}`}
+        >
+          <${StatusBadge} status=${street.status} />
+
+          <dl className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-gray-50 p-3">
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">Started</dt>
+              <dd className="mt-1 font-medium text-gray-900">${formatDate(street.dateStarted, 'Not yet')}</dd>
+            </div>
+            <div className="rounded-xl bg-gray-50 p-3">
+              <dt className="text-xs font-medium uppercase tracking-wide text-gray-500">Completed</dt>
+              <dd className="mt-1 font-medium text-gray-900">${formatDate(street.dateCompleted, 'Not yet')}</dd>
+            </div>
+          </dl>
+
+          ${notes ? html`
+            <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+              <p className="text-xs font-medium uppercase tracking-wide text-amber-800">Notes</p>
+              <p className="mt-1 text-sm text-amber-950">${notes}</p>
+            </div>
+          ` : null}
+
+          <div className="mt-6 border-t border-gray-100 pt-5">
+            <h3 className="font-semibold text-gray-900">Get email updates</h3>
+            <p className="mt-1 text-sm text-gray-600">
+              We'll email you when the pickup status for ${street.street} changes.
+            </p>
+
+            ${submitSuccess ? html`
+              <div className="mt-4 rounded-xl border border-green-200 bg-green-50 p-4" role="status">
+                <p className="font-medium text-green-900">You're signed up!</p>
+                <p className="mt-1 text-sm text-green-800">You'll get an email when ${street.street}'s status changes.</p>
+                <button
+                  type="button"
+                  onClick=${onClose}
+                  className="mt-3 rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-800"
+                >
+                  Done
+                </button>
+              </div>
+            ` : html`
+              <form onSubmit=${handleSubmit} className="mt-4 space-y-3">
+                <div>
+                  <label htmlFor="subscriberName" className="mb-1 block text-sm font-medium text-gray-700">Name</label>
+                  <input
+                    id="subscriberName"
+                    type="text"
+                    autoComplete="name"
+                    placeholder="Your name"
+                    value=${formData.subscriberName}
+                    onChange=${(event) => setFormData({ ...formData, subscriberName: event.target.value })}
+                    className=${inputClasses}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">Email</label>
+                  <input
+                    id="email"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    value=${formData.email}
+                    onChange=${(event) => setFormData({ ...formData, email: event.target.value })}
+                    className=${inputClasses}
+                  />
+                </div>
+
+                <label htmlFor="optInConfirmed" className="flex cursor-pointer items-start gap-3 text-sm text-gray-600">
+                  <input
+                    id="optInConfirmed"
+                    type="checkbox"
+                    checked=${formData.optInConfirmed}
+                    onChange=${(event) => setFormData({ ...formData, optInConfirmed: event.target.checked })}
+                    className="mt-0.5 h-5 w-5 flex-shrink-0 rounded border-gray-300 text-green-700 focus:ring-green-600"
+                    style=${{ minHeight: 0 }}
+                  />
+                  <span>
+                    I agree to receive email alerts about leaf pickup status for ${street.street}. To opt out of this service, email${' '}
+                    <a href="mailto:jshevel@cityofwestlake.org" className="font-medium text-green-700 underline" style=${{ minHeight: 0 }}>jshevel@cityofwestlake.org</a>
+                  </span>
+                </label>
+
+                ${submitError ? html`
+                  <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+                    ${submitError}
+                  </p>
+                ` : null}
+
+                <button
+                  type="submit"
+                  disabled=${isSubmitting}
+                  className="w-full rounded-lg bg-green-700 px-4 py-3 font-medium text-white transition-colors hover:bg-green-800 disabled:bg-gray-400"
+                >
+                  ${isSubmitting ? 'Signing up...' : 'Email me updates'}
+                </button>
+              </form>
+            `}
+          </div>
+
+          <p className="mt-5 text-xs text-gray-500">
+            Status is updated by the Westlake Service Department.
+          </p>
+        <//>
+      `;
+    }
+
+    /**
+     * RouteStreetsModal: every street on a route that is in progress or up next.
+     */
+    function RouteStreetsModal({ route, onClose, onStreetSelect }) {
+      if (!route) return null;
+
+      const subtitle =
+        route.stage === 'in-progress'
+          ? `${plural(route.streets.length, 'street')} in progress`
+          : `${plural(route.streets.length, 'street')} up next`;
+
+      return html`
+        <${Modal} isOpen=${true} onClose=${onClose} title=${`Route ${route.routeNumber}`} subtitle=${subtitle}>
+          <ul className="-mx-5 -my-5 divide-y divide-gray-100">
+            ${route.streets.map((street) => html`
+              <li key=${street.id}>
+                <${StreetRow} street=${street} onSelect=${onStreetSelect} />
+              </li>
+            `)}
+          </ul>
+        <//>
+      `;
+    }
+
+    /**
+     * HelpModal: how to use the tracker and what each status means.
+     */
+    function HelpModal({ isOpen, onClose }) {
+      const guides = [
+        {
+          title: 'Find your street',
+          steps: [
+            'Type your street name in the search box at the top of the page.',
+            'Or open a route under "All routes" to browse its streets.',
+            'Tap a street to see its status, dates, and any notes.'
+          ]
+        },
+        {
+          title: 'Get email updates',
+          steps: [
+            'Tap your street to open its details.',
+            'Enter your name and email and check the consent box.',
+            'We will email you whenever your street\'s status changes.'
+          ]
+        }
+      ];
+
+      const legend = [
+        { stage: 'not-started', text: 'Crews have not reached this street yet.' },
+        { stage: 'up-next', text: 'Crews will be on this street soon.' },
+        { stage: 'in-progress', text: 'A crew is collecting leaves on this street now.' },
+        { stage: 'completed', text: 'Leaves have been picked up for this pass.' }
+      ];
+
+      return html`
+        <${Modal} isOpen=${isOpen} onClose=${onClose} title="How it works" size="lg">
+          <div className="grid gap-4 md:grid-cols-2">
+            ${guides.map((guide) => html`
+              <div key=${guide.title} className="rounded-xl bg-green-50 p-4">
+                <h3 className="font-semibold text-green-900">${guide.title}</h3>
+                <ol className="mt-3 space-y-2">
+                  ${guide.steps.map((step, index) => html`
+                    <li key=${step} className="flex gap-3 text-sm text-gray-700">
+                      <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-green-700 text-xs font-bold text-white">
+                        ${index + 1}
+                      </span>
+                      <span>${step}</span>
+                    </li>
+                  `)}
+                </ol>
+              </div>
+            `)}
+          </div>
+
+          <h3 className="mt-6 font-semibold text-gray-900">What the statuses mean</h3>
+          <ul className="mt-3 space-y-3">
+            ${legend.map((item) => html`
+              <li key=${item.stage} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+                <span className="sm:w-32"><${Badge} stage=${item.stage} label=${STAGES[item.stage].label} /></span>
+                <span className="text-sm text-gray-700">${item.text}</span>
+              </li>
+            `)}
+          </ul>
+          <p className="mt-4 text-sm text-gray-600">
+            Crews go through the city more than once each season. The pass number next to a status (for example, "2nd pass") tells you which round of pickup it refers to.
+          </p>
+        <//>
+      `;
+    }
+
     // Install Prompt Banner Component
     function InstallPrompt() {
       const [showPrompt, setShowPrompt] = useState(false);
@@ -1235,7 +830,7 @@
       useEffect(() => {
         // Check if already installed
         setIsInstalled(
-          window.matchMedia('(display-mode: standalone)').matches || 
+          window.matchMedia('(display-mode: standalone)').matches ||
           window.navigator.standalone === true
         );
 
@@ -1247,7 +842,7 @@
         };
 
         window.addEventListener('pwa-installable', handleInstallable);
-        
+
         // Check immediately if prompt is available
         if (deferredPrompt && !isInstalled) {
           setShowPrompt(true);
@@ -1279,28 +874,28 @@
       }
 
       return html`
-        <div 
-          className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-green-600 to-green-700 text-white p-4 shadow-lg z-40 border-t-4 border-green-400"
+        <div
+          className="fixed bottom-0 left-0 right-0 z-40 bg-green-800 p-4 text-white shadow-lg"
           style=${{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
         >
-          <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-            <div className="flex items-center flex-1">
-              <span className="text-2xl mr-3">🍂</span>
+          <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
+            <div className="flex flex-1 items-center">
+              <span className="mr-3 text-2xl">🍂</span>
               <div>
-                <p className="font-semibold text-sm">Install Leaf Tracker</p>
+                <p className="text-sm font-semibold">Install Leaf Tracker</p>
                 <p className="text-xs opacity-90">Get quick access from your home screen</p>
               </div>
             </div>
             <div className="flex gap-2">
               <button
                 onClick=${handleInstall}
-                className="bg-white text-green-700 px-4 py-2 rounded-lg font-medium text-sm hover:bg-green-50 transition-colors whitespace-nowrap"
+                className="whitespace-nowrap rounded-lg bg-white px-4 py-2 text-sm font-medium text-green-800 transition-colors hover:bg-green-50"
               >
                 Install
               </button>
               <button
                 onClick=${handleDismiss}
-                className="text-white hover:bg-green-800 px-3 py-2 rounded-lg transition-colors"
+                className="rounded-lg px-3 py-2 text-white transition-colors hover:bg-green-900"
                 aria-label="Dismiss"
               >
                 ✕
@@ -1311,1286 +906,11 @@
       `;
     }
 
-    // Camera Analysis Modal Component (file upload to n8n workflow)
-    function CameraAnalysisModal({ isOpen, onClose }) {
-      const [selectedFile, setSelectedFile] = useState(null);
-      const [previewUrl, setPreviewUrl] = useState(null);
-      const [analysisResult, setAnalysisResult] = useState(null);
-      const [isSubmitting, setIsSubmitting] = useState(false);
-      const [error, setError] = useState(null);
-      const [isProcessingImage, setIsProcessingImage] = useState(false);
-      const [payloadImage, setPayloadImage] = useState(null);
-      const [uploadMeta, setUploadMeta] = useState(null);
-      const fileInputRef = React.useRef(null);
-
-      const complianceGuidelines = [
-        "✅ Leaves should be loose (not bagged)",
-        "✅ Keep piles at least 3 feet from the curb",
-        "✅ Remove branches larger than 3 inches",
-        "✅ No trash or debris mixed in",
-        "✅ Pile should be a manageable size"
-      ];
-
-      const estimateSizeKb = (dataUrl) => {
-        const base64 = dataUrl.split(',')[1] || '';
-        return Math.round((base64.length * 0.75) / 1024);
-      };
-
-      const compressImage = (file) => {
-        return new Promise((resolve, reject) => {
-          const objectUrl = URL.createObjectURL(file);
-          const image = new Image();
-          image.onload = () => {
-            try {
-              const maxDimension = 1280;
-              let { width, height } = image;
-              const scale = Math.min(1, maxDimension / Math.max(width, height));
-              const targetWidth = Math.round(width * scale);
-              const targetHeight = Math.round(height * scale);
-
-              const canvas = document.createElement('canvas');
-              canvas.width = targetWidth;
-              canvas.height = targetHeight;
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
-              const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
-
-              URL.revokeObjectURL(objectUrl);
-
-              resolve({
-                dataUrl,
-                width: targetWidth,
-                height: targetHeight,
-                sizeKb: estimateSizeKb(dataUrl),
-              });
-            } catch (err) {
-              reject(err);
-            }
-          };
-          image.onerror = () => {
-            URL.revokeObjectURL(objectUrl);
-            reject(new Error('Unable to read the selected image.'));
-          };
-          image.src = objectUrl;
-        });
-      };
-
-      const handleFileChange = async (event) => {
-        const file = event.target.files && event.target.files[0];
-        if (!file) {
-          return;
-        }
-
-        // Check if file is an image by MIME type or file extension
-        const isImageMimeType = file.type.startsWith('image/');
-        const imageExtensions = /\.(jpg|jpeg|png|gif|webp|heic|heif|bmp|tiff|tif)$/i;
-        const isImageExtension = imageExtensions.test(file.name);
-        
-        if (!isImageMimeType && !isImageExtension) {
-          setError('Please upload an image file (JPEG, PNG, HEIC, or other image formats).');
-          setSelectedFile(null);
-          setPreviewUrl(null);
-          setPayloadImage(null);
-          setUploadMeta(null);
-          return;
-        }
-
-        setIsProcessingImage(true);
-        setError(null);
-        setAnalysisResult(null);
-        setPayloadImage(null);
-        setUploadMeta(null);
-
-        try {
-          const compressed = await compressImage(file);
-          setSelectedFile(file);
-          setPreviewUrl(compressed.dataUrl);
-          setPayloadImage(compressed.dataUrl);
-          setUploadMeta({
-            sizeKb: compressed.sizeKb,
-            width: compressed.width,
-            height: compressed.height,
-          });
-        } catch (err) {
-          console.error('Image compression failed:', err);
-          // Check if it's a HEIC/HEIF file that the browser can't process
-          const isHeic = /\.(heic|heif)$/i.test(file.name);
-          if (isHeic) {
-            setError('Your browser may not support HEIC format. On iPhone, try: Settings > Camera > Formats > "Most Compatible" to save as JPEG instead, or use a different photo app.');
-          } else {
-            setError('We were unable to process that image. Please try a different photo or format.');
-          }
-          setSelectedFile(null);
-          setPreviewUrl(null);
-          setPayloadImage(null);
-          setUploadMeta(null);
-        } finally {
-          setIsProcessingImage(false);
-        }
-      };
-
-      const handleSelectClick = () => {
-        if (fileInputRef.current) {
-          fileInputRef.current.value = null;
-          fileInputRef.current.click();
-        }
-      };
-
-      const submitForAnalysis = async () => {
-        if (!payloadImage) {
-          setError('Add a photo before requesting analysis.');
-          return;
-        }
-
-        setIsSubmitting(true);
-        setError(null);
-        setAnalysisResult(null);
-
-        const normalizeList = (value) => {
-          if (!value && value !== 0) {
-            return [];
-          }
-
-          if (Array.isArray(value)) {
-            return value
-              .map((item) => {
-                if (!item && item !== 0) {
-                  return '';
-                }
-                if (typeof item === 'string') {
-                  return item.replace(/^[*-•]\s*/, '').trim();
-                }
-                if (item && typeof item === 'object') {
-                  if (typeof item.message === 'string') {
-                    return item.message.replace(/^[*-•]\s*/, '').trim();
-                  }
-                  if (typeof item.text === 'string') {
-                    return item.text.replace(/^[*-•]\s*/, '').trim();
-                  }
-                }
-                return String(item).replace(/^[*-•]\s*/, '').trim();
-              })
-              .filter(Boolean);
-          }
-
-          if (typeof value === 'string') {
-            return value
-              .split(/\n+/)
-              .map((line) => line.replace(/^[*-•]\s*/, '').trim())
-              .filter(Boolean);
-          }
-
-          return [String(value).replace(/^[*-•]\s*/, '').trim()].filter(Boolean);
-        };
-
-        try {
-          const response = await fetch('/api/analyze-pile', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              image: payloadImage,
-              filename: selectedFile ? selectedFile.name : 'leaf-pile.jpg',
-            }),
-          });
-
-
-          if (!response.ok) {
-            const error = new Error('Analysis request failed');
-            error.status = response.status;
-            throw error;
-          }
-
-          const rawResult = await response.json();
-          const reportContentSource =
-            rawResult.reportContent ??
-            rawResult.report ??
-            rawResult.message ??
-            rawResult.content ??
-            null;
-
-          setAnalysisResult({
-            issues: normalizeList(rawResult.issues),
-            suggestions: normalizeList(rawResult.suggestions),
-            reportContent: reportContentSource,
-            analysisTimestamp: rawResult.analysisTimestamp || new Date().toISOString(),
-            raw: rawResult,
-          });
-        } catch (err) {
-          console.error('Analysis request failed:', err);
-          if (err && err.status === 413) {
-            setError('The photo was too large to send to the analyzer. Try retaking it from a little farther back or using a lower-resolution photo.');
-          } else {
-            setError('We could not reach the analysis service. Please try again in a moment.');
-          }
-        } finally {
-          setIsSubmitting(false);
-        }
-      };
-
-      const resetUpload = () => {
-        setSelectedFile(null);
-        setPreviewUrl(null);
-        setAnalysisResult(null);
-        setError(null);
-        setPayloadImage(null);
-        setUploadMeta(null);
-        setIsSubmitting(false);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = null;
-        }
-      };
-
-      if (!isOpen) return null;
-
-      return html`
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 pt-16 z-[100]" style=${{ touchAction: 'none' }}>
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-[101]" style=${{ touchAction: 'pan-y' }}>
-            <div className="flex items-center justify-between p-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <span className="mr-2">📸</span>
-                Collection Analysis
-              </h3>
-              <button
-                onClick=${onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                aria-label="Close analysis"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-            
-            <div className="p-4 space-y-6">
-              <div className="bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg border border-blue-200">
-                <p className="text-sm text-gray-600 mb-4">
-                  Snap a photo of your leaf collection and upload it. Our AI will review the image and provide compliance guidance.
-                </p>
-                
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-700">Collection Guidelines:</h4>
-                  <ul className="text-xs text-gray-600 space-y-1">
-                    ${complianceGuidelines.map(guideline => html`
-                      <li key=${guideline}>${guideline}</li>
-                    `)}
-                  </ul>
-                </div>
-              </div>
-
-          ${error && html`
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-center">
-                <div className="text-red-500 text-xl mr-3">⚠️</div>
-                <div>
-                  <h3 className="text-sm font-medium text-red-800">Upload Error</h3>
-                  <p className="text-sm text-red-700 mt-1">${error}</p>
-                </div>
-              </div>
-            </div>
-          `}
-
-          <div className="space-y-4">
-            <input
-              type="file"
-              accept="image/*,.heic,.heif"
-              capture="environment"
-              ref=${fileInputRef}
-              onChange=${handleFileChange}
-              className="hidden"
-            />
-
-            <div
-              className=${`border-2 border-dashed rounded-lg p-6 text-center transition ${previewUrl ? 'border-green-300 bg-green-50' : 'border-gray-300 hover:border-green-400'}`}
-            >
-              ${previewUrl ? html`
-                <div className="space-y-3">
-                  <img
-                    src=${previewUrl}
-                    alt="Leaf pile preview"
-                    className="w-full rounded-md max-h-64 object-cover border border-green-200"
-                  />
-                  <p className="text-sm text-gray-600">
-                    ${selectedFile ? selectedFile.name : 'leaf-pile.jpg'}
-                  </p>
-                  ${uploadMeta && html`
-                    <p className="text-xs text-gray-500">
-                      Optimized to ${uploadMeta.width}×${uploadMeta.height}px (~${uploadMeta.sizeKb} KB)
-                    </p>
-                  `}
-                  <div className="flex justify-center gap-3">
-                    <button
-                      onClick=${handleSelectClick}
-                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
-                    >
-                      Choose another photo
-                    </button>
-                    <button
-                      onClick=${resetUpload}
-                      className="px-4 py-2 bg-white border border-gray-300 text-gray-600 rounded-md hover:bg-gray-100 transition"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              ` : html`
-                <div className="space-y-3">
-                  <div className="text-4xl">📷</div>
-                  <p className="text-sm text-gray-600">
-                    Tap below to snap a new photo or upload one from your device.
-                  </p>
-                  <button
-                    onClick=${handleSelectClick}
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
-                  >
-                    Select Photo
-                  </button>
-                  <p className="text-xs text-gray-500">
-                    Works on mobile and desktop. Accepts all image formats including iPhone photos (HEIC/HEIF), JPEG, PNG, and more.
-                  </p>
-                </div>
-              `}
-            </div>
-
-            <button
-              type="button"
-              onClick=${(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                submitForAnalysis();
-                return false;
-              }}
-              disabled=${isSubmitting || isProcessingImage || !payloadImage}
-              className="w-full bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              ${isProcessingImage
-                ? 'Optimizing photo...'
-                : isSubmitting
-                  ? 'Sending for analysis...'
-                  : 'Send to Analysis'}
-            </button>
-            
-            ${isSubmitting && html`
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center">
-                  <div className="loading-spinner mr-3"></div>
-                  <div>
-                    <p className="text-sm font-medium text-blue-800">AI analysis in progress...</p>
-                    <p className="text-xs text-blue-700 mt-1">Hang tight—this usually takes under 10 seconds.</p>
-                  </div>
-                </div>
-              </div>
-            `}
-          </div>
-
-          ${analysisResult && (() => {
-            const reportMarkup = renderReportContent(analysisResult.reportContent);
-
-            return html`
-              <div className="p-6 rounded-lg border-2 border-gray-200 bg-white">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center">
-                    <span className="text-2xl mr-3">📋</span>
-                    <h4 className="text-lg font-semibold text-gray-900">
-                      AI Analysis Report
-                    </h4>
-                  </div>
-                  ${analysisResult.analysisTimestamp && html`
-                    <p className="text-xs text-gray-500">
-                      Completed: ${formatDate(analysisResult.analysisTimestamp)}
-                    </p>
-                  `}
-                </div>
-
-                ${reportMarkup ? html`
-                  <div className="bg-white rounded-lg p-4 border border-gray-200">
-                    ${reportMarkup}
-                  </div>
-                ` : html`
-                  ${Array.isArray(analysisResult.issues) && analysisResult.issues.length > 0 && html`
-                    <div className="mb-4">
-                      <h5 className="text-sm font-medium text-red-700 mb-2">Issues Found:</h5>
-                      <ul className="text-sm text-red-600 space-y-1">
-                        ${analysisResult.issues.map((issue) => html`<li key=${issue}>• ${issue}</li>`)}
-                      </ul>
-                    </div>
-                  `}
-
-                  ${Array.isArray(analysisResult.suggestions) && analysisResult.suggestions.length > 0 && html`
-                    <div>
-                      <h5 className="text-sm font-medium text-gray-700 mb-2">Suggestions:</h5>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        ${analysisResult.suggestions.map((suggestion) => html`<li key=${suggestion}>• ${suggestion}</li>`)}
-                      </ul>
-                    </div>
-                  `}
-
-                  ${(!Array.isArray(analysisResult.issues) || analysisResult.issues.length === 0) &&
-                    (!Array.isArray(analysisResult.suggestions) || analysisResult.suggestions.length === 0) && html`
-                      <p className="text-sm text-gray-600">
-                        The automation completed without additional notes. Please verify the pile visually.
-                      </p>
-                    `}
-                `}
-              </div>
-            `;
-          })()}
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
     /**
-     * CollapsibleRoute Component
-     * Displays a collapsible group of streets for a single route
+     * ServiceMessages: announcements from the Service Department (Airtable "Message" table).
      */
-    function CollapsibleRoute({ routeNumber, records, isExpanded, onToggle, onStreetClick }) {
-      const completedCount = records.filter(r => isCompletedStatus(r.status)).length;
-      const totalCount = records.length;
-      const completionPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-      
-      // Determine overall route status
-      const inProgressCount = records.filter(r => {
-        if (!r.status) return false;
-        const status = normalizeStatus(r.status);
-        const statusLower = status.toLowerCase();
-        // Check for exact matches or if status contains "in progress" (handles edge cases)
-        return status === 'In Progress' || status === 'In Progress 2nd Pass' || 
-               status === 'In Progress 3rd Pass' || status === 'In Progress 4th Pass' ||
-               status === 'In Progress 5th Pass' || status === 'In Progress 6th Pass' ||
-               status === 'In Progress 7th Pass' || status === 'In Progress 8th Pass' ||
-               status === 'Final Pass In Progress' ||
-               (statusLower.includes('in progress') && !statusLower.includes('completed'));
-      }).length;
-      const upNextCount = records.filter(r => {
-        if (!r.status) return false;
-        const status = normalizeStatus(r.status);
-        const statusLower = status.toLowerCase();
-        // Check for exact matches or if status contains "up next" (handles edge cases)
-        return status === 'Up Next' || status === 'Up Next- 2nd Pass' || 
-               status === 'Up Next- 3rd Pass' || status === 'Up Next- 4th Pass' ||
-               status === 'Up Next- 5th Pass' || status === 'Up Next- 6th Pass' ||
-               status === 'Up Next- 7th Pass' || status === 'Up Next- 8th Pass' ||
-               status === 'Final Pass Up Next' ||
-               (statusLower.includes('up next') && !statusLower.includes('completed') && !statusLower.includes('in progress'));
-      }).length;
-      
-      // Determine the highest pass status for mixed routes
-      let highestInProgressPass = 0;
-      let highestUpNextPass = 0;
-      let highestCompletedPass = 0;
-      let hasFinalPassInProgress = false;
-      let hasFinalPassUpNext = false;
-      let hasFinalPassCompleted = false;
-      
-      records.forEach(r => {
-        if (!r.status) return;
-        const status = normalizeStatus(r.status);
-        const statusLower = status.toLowerCase();
-        
-        // Check for Final Pass statuses first (highest priority)
-        if (status === 'Final Pass In Progress') {
-          hasFinalPassInProgress = true;
-        }
-        if (status === 'Final Pass Up Next') {
-          hasFinalPassUpNext = true;
-        }
-        if (status === 'Final Pass Completed') {
-          hasFinalPassCompleted = true;
-        }
-        
-        // Check for In Progress statuses (exact match or contains "in progress")
-        if (status === 'In Progress' || (statusLower.includes('in progress') && !statusLower.includes('completed') && !statusLower.includes('final pass'))) {
-          // Extract pass number if present
-          const passMatch = status.match(/(\d+)(?:st|nd|rd|th)\s*pass/i);
-          if (passMatch) {
-            const passNum = parseInt(passMatch[1]);
-            highestInProgressPass = Math.max(highestInProgressPass, passNum);
-          } else {
-            highestInProgressPass = Math.max(highestInProgressPass, 1);
-          }
-        }
-        
-        // Check for Up Next statuses
-        if (status === 'Up Next' || (statusLower.includes('up next') && !statusLower.includes('completed') && !statusLower.includes('in progress') && !statusLower.includes('final pass'))) {
-          const passMatch = status.match(/(\d+)(?:st|nd|rd|th)\s*pass/i);
-          if (passMatch) {
-            const passNum = parseInt(passMatch[1]);
-            highestUpNextPass = Math.max(highestUpNextPass, passNum);
-          } else {
-            highestUpNextPass = Math.max(highestUpNextPass, 1);
-          }
-        }
-        
-        // Track completed pass statuses to determine route activity
-        if ((status === 'Completed' || statusLower.includes('completed')) && !statusLower.includes('final pass')) {
-          const passMatch = status.match(/(\d+)(?:st|nd|rd|th)\s*pass/i);
-          if (passMatch) {
-            const passNum = parseInt(passMatch[1]);
-            highestCompletedPass = Math.max(highestCompletedPass, passNum);
-          } else if (status === 'Completed') {
-            highestCompletedPass = Math.max(highestCompletedPass, 1);
-          }
-        }
-      });
-      
-      let routeStatus = 'Not Started';
-      // Check if route has any active statuses (not all streets are "Not Started")
-      const hasActiveStatuses = completedCount > 0 || inProgressCount > 0 || upNextCount > 0 || highestCompletedPass > 0 || hasFinalPassInProgress || hasFinalPassUpNext || hasFinalPassCompleted;
-      
-      if (completedCount === totalCount) {
-        routeStatus = 'Completed';
-      } else if (hasFinalPassCompleted && completedCount === totalCount - 1) {
-        // If all streets are completed or have Final Pass Completed
-        routeStatus = 'Final Pass Completed';
-      } else if (hasFinalPassInProgress) {
-        // Final Pass In Progress takes priority
-        routeStatus = 'Final Pass In Progress';
-      } else if (hasFinalPassUpNext && inProgressCount === 0) {
-        // Show Final Pass Up Next if no streets are in progress
-        routeStatus = 'Final Pass Up Next';
-      } else if (hasActiveStatuses) {
-        // Prioritize showing In Progress status if present
-        if (highestInProgressPass > 1) {
-          const passLabels = { 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th' };
-          routeStatus = `In Progress ${passLabels[highestInProgressPass] || highestInProgressPass + 'th'} Pass`;
-        } else if (highestInProgressPass === 1) {
-          routeStatus = 'In Progress';
-        } else if (highestCompletedPass > 0) {
-          // If there are completed passes but no in-progress, show the highest completed pass as the route status
-          const passLabels = { 1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th' };
-          routeStatus = `Completed ${passLabels[highestCompletedPass] || highestCompletedPass + 'th'} Pass`;
-        } else if (highestUpNextPass > 1) {
-          // Show the highest pass status if there are multiple passes
-          const passLabels = { 2: '2nd', 3: '3rd', 4: '4th', 5: '5th', 6: '6th', 7: '7th', 8: '8th' };
-          routeStatus = `Up Next- ${passLabels[highestUpNextPass] || highestUpNextPass + 'th'} Pass`;
-        } else if (highestUpNextPass === 1) {
-          routeStatus = 'Up Next';
-        } else {
-          // Fallback: if we have active statuses but couldn't determine the specific status, show "In Progress"
-          routeStatus = 'In Progress';
-        }
-      }
-
-      return html`
-        <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm mb-3">
-          <button
-            type="button"
-            onClick=${onToggle}
-            className="w-full px-4 py-4 min-h-[60px] bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-150 transition-all duration-200 flex items-center justify-between"
-          >
-            <div className="flex items-center space-x-3 flex-1">
-              <span className="text-xl transition-transform duration-200 ${isExpanded ? 'transform rotate-90' : ''}">
-                ▶
-              </span>
-              <div className="text-left">
-                <h3 className="text-lg font-bold text-green-800">
-                  Route ${routeNumber || 'Unknown'}
-                </h3>
-                <p className="text-sm text-green-600">
-                  ${totalCount} ${totalCount === 1 ? 'street' : 'streets'}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                completionPercent === 100 
-                  ? 'bg-green-100 text-green-800' 
-                  : completionPercent > 0 
-                    ? 'bg-yellow-100 text-yellow-800' 
-                    : 'bg-gray-100 text-gray-700'
-              }">
-                ${completionPercent}% complete
-              </span>
-              <${StatusBadge} status=${routeStatus} />
-            </div>
-          </button>
-          
-          ${isExpanded ? html`
-            <div className="border-t border-gray-200">
-              <ul className="divide-y divide-gray-100">
-                ${records.map((record) => html`
-                  <li key=${record.id}>
-                    <button
-                      type="button"
-                      onClick=${() => onStreetClick(record)}
-                      className="flex w-full items-center justify-between px-6 py-3 min-h-[56px] text-left transition-all duration-200 hover:bg-gray-50"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">${record.street}</p>
-                        ${record.dateStarted ? html`
-                          <p className="text-xs text-gray-500 mt-1">
-                            Started: ${formatDate(record.dateStarted)}
-                          </p>
-                        ` : null}
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <${StatusBadge} status=${record.status || 'Unknown'} />
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                      </div>
-                    </button>
-                  </li>
-                `)}
-              </ul>
-            </div>
-          ` : null}
-        </div>
-      `;
-    }
-
-    /**
-     * HowToUse Component - Modal Version
-     * Displays onboarding guide for the three main features
-     */
-    function HowToUse({ isOpen, onClose }) {
-      const contentRef = React.useRef(null);
-
-      useEffect(() => {
-        if (isOpen && contentRef.current) {
-          // Animate entrance with GSAP
-          gsap.from(contentRef.current.querySelectorAll('.feature-card'), {
-            opacity: 0.9,
-            y: 15,
-            duration: 0.3,
-            stagger: 0.08,
-            ease: 'power2.out'
-          });
-        }
-      }, [isOpen]);
-
-      if (!isOpen) return null;
-
-      const features = [
-        {
-          icon: '🔍',
-          title: 'Find Your Street',
-          description: 'Search and track your street\'s pickup status',
-          steps: [
-            'Type your street name in the search bar',
-            'Browse routes by tapping to expand route groups',
-            'Tap any street to see detailed pickup status',
-            'View start dates, completion dates, and notes'
-          ]
-        },
-        {
-          icon: '📸',
-          title: 'Analyze Your Collection',
-          description: 'Get AI-powered feedback on your leaf collection',
-          steps: [
-            'Tap the "Analyze Collection" button',
-            'Take a photo or upload from your device',
-            'Submit for instant AI analysis',
-            'Receive compliance feedback and suggestions'
-          ]
-        },
-        {
-          icon: '📧',
-          title: 'Get Email Alerts',
-          description: 'Stay updated on your street\'s status',
-          steps: [
-            'Search for and select your street',
-            'Tap to open detailed street information',
-            'Fill out the email alert subscription form',
-            'Get notified when pickup status changes'
-          ]
-        }
-      ];
-
-      return html`
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 pt-16 z-[100]" style=${{ touchAction: 'none' }}>
-          <div 
-            ref=${contentRef}
-            className="bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto relative z-[101]" 
-            style=${{ touchAction: 'pan-y' }}
-          >
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white z-10">
-              <div className="flex items-center">
-                <span className="text-2xl md:text-3xl mr-3">💡</span>
-                <div>
-                  <h3 className="text-lg md:text-xl font-semibold text-green-800">
-                    How to Use This App
-                  </h3>
-                  <p className="text-xs md:text-sm text-gray-600 mt-1">
-                    Everything you need to track your leaf collection
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick=${onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                aria-label="Close help guide"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-
-            <div className="p-4 md:p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-                ${features.map((feature, index) => html`
-                  <div 
-                    key=${feature.title}
-                    className="feature-card bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 md:p-6 border border-green-200 shadow-sm"
-                  >
-                    <div className="text-center mb-4">
-                      <span className="text-3xl md:text-4xl mb-3 block">${feature.icon}</span>
-                      <h3 className="text-base md:text-lg font-bold text-gray-900 mb-2">
-                        ${index + 1}. ${feature.title}
-                      </h3>
-                      <p className="text-xs md:text-sm text-gray-600 leading-relaxed">
-                        ${feature.description}
-                      </p>
-                    </div>
-                    <div className="space-y-2 md:space-y-3">
-                      ${feature.steps.map((step, stepIndex) => html`
-                        <div key=${stepIndex} className="flex items-start space-x-2 md:space-x-3">
-                          <span className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 bg-green-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                            ${stepIndex + 1}
-                          </span>
-                          <p className="text-xs md:text-sm text-gray-700 leading-relaxed">${step}</p>
-                        </div>
-                      `)}
-                    </div>
-                  </div>
-                `)}
-              </div>
-
-              <div className="mt-6 text-center bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p className="text-xs md:text-sm text-blue-700">
-                  💡 <strong>Tip:</strong> You can access this guide anytime by tapping the "How to Use" button
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    /**
-     * ActiveCrewsModal Component
-     * Modal to display all streets being collected on a specific active route
-     */
-    function ActiveCrewsModal({ isOpen, onClose, route, onStreetClick }) {
-      if (!isOpen || !route) return null;
-
-      return html`
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 pt-16 z-[100]" style=${{ touchAction: 'none' }}>
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-[101]" style=${{ touchAction: 'pan-y' }}>
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-orange-50 to-yellow-50 sticky top-0 z-[102]">
-              <div className="flex items-center space-x-3">
-                <span className="text-2xl">🚜</span>
-                <div>
-                  <h3 className="text-lg font-semibold text-orange-800">
-                    Route ${route.routeNumber} - Crew Working Now
-                  </h3>
-                  <p className="text-sm text-orange-600 mt-1">
-                    ${route.streets.length} ${route.streets.length === 1 ? 'street' : 'streets'} in progress
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick=${onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                aria-label="Close route details"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-            
-            <div className="p-4">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-                <p className="text-sm text-yellow-800 flex items-center">
-                  <span className="mr-2">⚠️</span>
-                  This route is actively being collected. Tap any street to see detailed status and subscribe to alerts.
-                </p>
-              </div>
-
-              <ul className="divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden">
-                ${route.streets.map((street, index) => html`
-                  <li key=${street.id}>
-                    <button
-                      type="button"
-                      onClick=${() => {
-                        onClose();
-                        onStreetClick(street);
-                      }}
-                      className="flex w-full items-center justify-between px-4 py-3 min-h-[56px] text-left transition-all duration-200 hover:bg-orange-50"
-                    >
-                      <div className="flex items-center flex-1 space-x-3">
-                        <span className="flex-shrink-0 w-6 h-6 bg-orange-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                          ${index + 1}
-                        </span>
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900">${street.street}</p>
-                          ${street.dateStarted ? html`
-                            <p className="text-xs text-gray-500 mt-1">
-                              Started: ${formatDate(street.dateStarted)}
-                            </p>
-                          ` : null}
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <${StatusBadge} status=${street.status || 'Unknown'} />
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                      </div>
-                    </button>
-                  </li>
-                `)}
-              </ul>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    /**
-     * ActiveCrews Component
-     * Displays all routes currently "In Progress" to show where crews are actively working
-     */
-    function ActiveCrews({ onStreetClick }) {
-      const [activeRoutes, setActiveRoutes] = useState([]);
-      const [loading, setLoading] = useState(true);
-      const [error, setError] = useState(null);
-      const [selectedRoute, setSelectedRoute] = useState(null);
-      const [isModalOpen, setIsModalOpen] = useState(false);
-
-      useEffect(() => {
-        let isMounted = true;
-
-        async function loadActiveCrews() {
-          try {
-            const response = await fetch('/api/streets');
-            if (!response.ok) {
-              throw new Error('Unable to fetch street data.');
-            }
-
-            const payload = await response.json();
-            
-            if (isMounted && Array.isArray(payload.records)) {
-              // Filter for "In Progress" streets and group by route
-              const inProgressStreets = payload.records.filter(
-                record => {
-                  const status = normalizeStatus(record.status);
-                  const isInProgress = status === 'In Progress' || status === 'In Progress 2nd Pass' || 
-                         status === 'In Progress 3rd Pass' || status === 'In Progress 4th Pass' ||
-                         status === 'In Progress 5th Pass' || status === 'In Progress 6th Pass' ||
-                         status === 'In Progress 7th Pass' || status === 'In Progress 8th Pass' ||
-                         status === 'Final Pass In Progress';
-                  
-                  
-                  return isInProgress;
-                }
-              );
-              
-
-              // Group by route number
-              const routeMap = {};
-              inProgressStreets.forEach(street => {
-                const routeNum = street.routeNumber || 'Unknown';
-                if (!routeMap[routeNum]) {
-                  routeMap[routeNum] = {
-                    routeNumber: routeNum,
-                    streets: []
-                  };
-                }
-                routeMap[routeNum].streets.push(street);
-              });
-
-              // Convert to array and sort by route number
-              const routes = Object.values(routeMap).sort((a, b) => {
-                const aNum = parseInt(a.routeNumber) || 999999;
-                const bNum = parseInt(b.routeNumber) || 999999;
-                return aNum - bNum;
-              });
-
-
-              setActiveRoutes(routes);
-            }
-          } catch (err) {
-            console.error('Error loading active crews:', err);
-            if (isMounted) {
-              setError('Unable to load active crew locations.');
-            }
-          } finally {
-            if (isMounted) {
-              setLoading(false);
-            }
-          }
-        }
-
-        loadActiveCrews();
-
-        // Refresh every 5 minutes
-        const interval = setInterval(loadActiveCrews, 5 * 60 * 1000);
-
-        return () => {
-          isMounted = false;
-          clearInterval(interval);
-        };
-      }, []);
-
-      const openRouteModal = (route) => {
-        setSelectedRoute(route);
-        setIsModalOpen(true);
-      };
-
-      const closeRouteModal = () => {
-        setIsModalOpen(false);
-        setSelectedRoute(null);
-      };
-
-      // Don't render if loading, error, or no active routes
-      if (loading || error || activeRoutes.length === 0) {
-        return null;
-      }
-
-      return html`
-        <div className="bg-gradient-to-r from-yellow-50 via-orange-50 to-yellow-50 rounded-2xl shadow-lg border-2 border-yellow-400 p-4 md:p-6">
-          <div className="flex items-center mb-4">
-            <span className="text-2xl mr-2 animate-pulse">🚜</span>
-            <div className="flex-1">
-              <h2 className="text-xl md:text-2xl font-bold text-orange-800">
-                Crews Currently Working
-              </h2>
-              <p className="text-sm text-orange-600 mt-1">
-                ${activeRoutes.length} ${activeRoutes.length === 1 ? 'route' : 'routes'} in progress right now • Tap to see all streets
-              </p>
-            </div>
-            <div className="hidden md:flex items-center space-x-2 bg-orange-100 px-3 py-2 rounded-lg">
-              <span className="text-xs font-medium text-orange-800">Live Status</span>
-              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            ${activeRoutes.map((route) => {
-              const streetCount = route.streets.length;
-              const streetsList = route.streets.map(s => s.street).slice(0, 3);
-              const hasMore = route.streets.length > 3;
-              
-              return html`
-                <button
-                  type="button"
-                  key=${route.routeNumber}
-                  onClick=${() => openRouteModal(route)}
-                  className="bg-white rounded-xl p-4 border-2 border-orange-200 shadow-sm hover:shadow-lg hover:border-orange-300 transition-all duration-200 text-left w-full cursor-pointer"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-2xl">🔄</span>
-                      <h3 className="text-lg font-bold text-orange-800">
-                        Route ${route.routeNumber}
-                      </h3>
-                    </div>
-                    <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full">
-                      ${streetCount} ${streetCount === 1 ? 'street' : 'streets'}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-gray-600 mb-2">Currently on:</p>
-                    ${streetsList.map(street => html`
-                      <div key=${street} className="text-sm text-gray-700 flex items-center">
-                        <span className="w-1.5 h-1.5 bg-orange-400 rounded-full mr-2"></span>
-                        ${street}
-                      </div>
-                    `)}
-                    ${hasMore && html`
-                      <p className="text-xs text-orange-600 font-medium mt-2 flex items-center">
-                        <span className="mr-1">👆</span>
-                        Click to see all ${route.streets.length} streets
-                      </p>
-                    `}
-                  </div>
-                </button>
-              `;
-            })}
-          </div>
-          
-          <div className="mt-4 flex items-center justify-center text-xs text-orange-700 bg-orange-100 rounded-lg p-2">
-            <span className="mr-2">ℹ️</span>
-            Updates automatically every 5 minutes • Last updated: ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-          </div>
-
-          <${ActiveCrewsModal} 
-            isOpen=${isModalOpen} 
-            onClose=${closeRouteModal} 
-            route=${selectedRoute}
-            onStreetClick=${onStreetClick}
-          />
-        </div>
-      `;
-    }
-
-    /**
-     * UpNextRoutesModal Component
-     * Modal to display all streets scheduled on a specific "Up Next" route
-     */
-    function UpNextRoutesModal({ isOpen, onClose, route, onStreetClick }) {
-      if (!isOpen || !route) return null;
-
-      return html`
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 pt-16 z-[100]" style=${{ touchAction: 'none' }}>
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-[101]" style=${{ touchAction: 'pan-y' }}>
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 sticky top-0 z-[102]">
-              <div className="flex items-center space-x-3">
-                <span className="text-2xl">🔜</span>
-                <div>
-                  <h3 className="text-lg font-semibold text-blue-800">
-                    Route ${route.routeNumber} - Up Next
-                  </h3>
-                  <p className="text-sm text-blue-600 mt-1">
-                    ${route.streets.length} ${route.streets.length === 1 ? 'street' : 'streets'} scheduled to start soon
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick=${onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
-                aria-label="Close route details"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-            
-            <div className="p-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                <p className="text-sm text-blue-800 flex items-center">
-                  <span className="mr-2">⏰</span>
-                  This route is scheduled to start soon. Tap any street to see detailed status and subscribe to alerts.
-                </p>
-              </div>
-
-              <ul className="divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden">
-                ${route.streets.map((street, index) => html`
-                  <li key=${street.id}>
-                    <button
-                      type="button"
-                      onClick=${() => {
-                        onClose();
-                        onStreetClick(street);
-                      }}
-                      className="flex w-full items-center justify-between px-4 py-3 min-h-[56px] text-left transition-all duration-200 hover:bg-blue-50"
-                    >
-                      <div className="flex items-center flex-1 space-x-3">
-                        <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-                          ${index + 1}
-                        </span>
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900">${street.street}</p>
-                          ${street.dateStarted ? html`
-                            <p className="text-xs text-gray-500 mt-1">
-                              Scheduled: ${formatDate(street.dateStarted)}
-                            </p>
-                          ` : null}
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <${StatusBadge} status=${street.status || 'Unknown'} />
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                      </div>
-                    </button>
-                  </li>
-                `)}
-              </ul>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    /**
-     * UpNextRoutes Component
-     * Displays all routes with "Up Next" status to show what's coming soon
-     */
-    function UpNextRoutes({ onStreetClick }) {
-      const [upNextRoutes, setUpNextRoutes] = useState([]);
-      const [loading, setLoading] = useState(true);
-      const [error, setError] = useState(null);
-      const [selectedRoute, setSelectedRoute] = useState(null);
-      const [isModalOpen, setIsModalOpen] = useState(false);
-
-      useEffect(() => {
-        let isMounted = true;
-
-        async function loadUpNextRoutes() {
-          try {
-            const response = await fetch('/api/streets');
-            if (!response.ok) {
-              throw new Error('Unable to fetch street data.');
-            }
-
-            const payload = await response.json();
-            if (isMounted && Array.isArray(payload.records)) {
-              // Filter for "Up Next" streets and group by route
-              const upNextStreets = payload.records.filter(
-                record => {
-                  const status = normalizeStatus(record.status);
-                  return status === 'Up Next' || status === 'Up Next- 2nd Pass' || 
-                         status === 'Up Next- 3rd Pass' || status === 'Up Next- 4th Pass' ||
-                         status === 'Up Next- 5th Pass' || status === 'Up Next- 6th Pass' ||
-                         status === 'Up Next- 7th Pass' || status === 'Up Next- 8th Pass' ||
-                         status === 'Final Pass Up Next';
-                }
-              );
-
-              // Group by route number
-              const routeMap = {};
-              upNextStreets.forEach(street => {
-                const routeNum = street.routeNumber || 'Unknown';
-                if (!routeMap[routeNum]) {
-                  routeMap[routeNum] = {
-                    routeNumber: routeNum,
-                    streets: []
-                  };
-                }
-                routeMap[routeNum].streets.push(street);
-              });
-
-              // Convert to array and sort by route number
-              const routes = Object.values(routeMap).sort((a, b) => {
-                const aNum = parseInt(a.routeNumber) || 999999;
-                const bNum = parseInt(b.routeNumber) || 999999;
-                return aNum - bNum;
-              });
-
-              setUpNextRoutes(routes);
-            }
-          } catch (err) {
-            console.error('Error loading up next routes:', err);
-            if (isMounted) {
-              setError('Unable to load upcoming routes.');
-            }
-          } finally {
-            if (isMounted) {
-              setLoading(false);
-            }
-          }
-        }
-
-        loadUpNextRoutes();
-
-        // Refresh every 5 minutes
-        const interval = setInterval(loadUpNextRoutes, 5 * 60 * 1000);
-
-        return () => {
-          isMounted = false;
-          clearInterval(interval);
-        };
-      }, []);
-
-      const openRouteModal = (route) => {
-        setSelectedRoute(route);
-        setIsModalOpen(true);
-      };
-
-      const closeRouteModal = () => {
-        setIsModalOpen(false);
-        setSelectedRoute(null);
-      };
-
-      // Don't render if loading, error, or no up next routes
-      if (loading || error || upNextRoutes.length === 0) {
-        return null;
-      }
-
-      return html`
-        <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 rounded-2xl shadow-lg border-2 border-blue-400 p-4 md:p-6">
-          <div className="flex items-center mb-4">
-            <span className="text-2xl mr-2">🔜</span>
-            <div className="flex-1">
-              <h2 className="text-xl md:text-2xl font-bold text-blue-800">
-                Routes Up Next
-              </h2>
-              <p className="text-sm text-blue-600 mt-1">
-                ${upNextRoutes.length} ${upNextRoutes.length === 1 ? 'route' : 'routes'} scheduled to start soon • Tap to see all streets
-              </p>
-            </div>
-            <div className="hidden md:flex items-center space-x-2 bg-blue-100 px-3 py-2 rounded-lg">
-              <span className="text-xs font-medium text-blue-800">Coming Soon</span>
-              <span className="text-blue-500">⏰</span>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            ${upNextRoutes.map((route) => {
-              const streetCount = route.streets.length;
-              const streetsList = route.streets.map(s => s.street).slice(0, 3);
-              const hasMore = route.streets.length > 3;
-              
-              return html`
-                <button
-                  type="button"
-                  key=${route.routeNumber}
-                  onClick=${() => openRouteModal(route)}
-                  className="bg-white rounded-xl p-4 border-2 border-blue-200 shadow-sm hover:shadow-lg hover:border-blue-300 transition-all duration-200 text-left w-full cursor-pointer"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-2xl">📍</span>
-                      <h3 className="text-lg font-bold text-blue-800">
-                        Route ${route.routeNumber}
-                      </h3>
-                    </div>
-                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
-                      ${streetCount} ${streetCount === 1 ? 'street' : 'streets'}
-                    </span>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-gray-600 mb-2">Includes:</p>
-                    ${streetsList.map(street => html`
-                      <div key=${street} className="text-sm text-gray-700 flex items-center">
-                        <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2"></span>
-                        ${street}
-                      </div>
-                    `)}
-                    ${hasMore && html`
-                      <p className="text-xs text-blue-600 font-medium mt-2 flex items-center">
-                        <span className="mr-1">👆</span>
-                        Click to see all ${route.streets.length} streets
-                      </p>
-                    `}
-                  </div>
-                </button>
-              `;
-            })}
-          </div>
-          
-          <div className="mt-4 flex items-center justify-center text-xs text-blue-700 bg-blue-100 rounded-lg p-2">
-            <span className="mr-2">ℹ️</span>
-            These routes will begin once current routes are completed
-          </div>
-
-          <${UpNextRoutesModal} 
-            isOpen=${isModalOpen} 
-            onClose=${closeRouteModal} 
-            route=${selectedRoute}
-            onStreetClick=${onStreetClick}
-          />
-        </div>
-      `;
-    }
-
-    /**
-     * ServiceMessages Component
-     * Displays messages from the service department fetched from Airtable
-     */
-    function ServiceMessages() {
+    function ServiceMessages({ hidden = false }) {
       const [messages, setMessages] = useState([]);
-      const [loading, setLoading] = useState(true);
-      const [error, setError] = useState(null);
 
       useEffect(() => {
         let isMounted = true;
@@ -2599,32 +919,24 @@
           try {
             const response = await fetch('/api/messages');
             if (!response.ok) {
-              const errorText = await response.text();
-              console.error('API error response:', response.status, errorText);
               throw new Error(`Unable to fetch messages (${response.status})`);
             }
 
             const payload = await response.json();
-            if (isMounted) {
-              // Sort messages by date (newest first) on client side
-              const sortedMessages = Array.isArray(payload.messages) 
-                ? payload.messages.sort((a, b) => {
-                    if (!a.dateCreated) return 1;
-                    if (!b.dateCreated) return -1;
-                    return new Date(b.dateCreated) - new Date(a.dateCreated);
-                  })
-                : [];
-              setMessages(sortedMessages);
+            if (isMounted && Array.isArray(payload.messages)) {
+              // Newest first
+              const sorted = payload.messages
+                .filter((msg) => msg.message && msg.message.trim())
+                .sort((a, b) => {
+                  if (!a.dateCreated) return 1;
+                  if (!b.dateCreated) return -1;
+                  return new Date(b.dateCreated) - new Date(a.dateCreated);
+                });
+              setMessages(sorted);
             }
           } catch (err) {
+            // Announcements are optional; hide the section if they can't load.
             console.error('Error loading messages:', err);
-            if (isMounted) {
-              setError('Unable to load service messages.');
-            }
-          } finally {
-            if (isMounted) {
-              setLoading(false);
-            }
           }
         }
 
@@ -2635,57 +947,227 @@
         };
       }, []);
 
-      // Don't render anything if loading, error, or no messages
-      if (loading || error || messages.length === 0) {
+      if (messages.length === 0) {
         return null;
       }
 
-      /**
-       * Format date for display
-       * @param {string} dateStr - ISO date string
-       * @returns {string} Formatted date
-       */
-      const formatDate = (dateStr) => {
-        if (!dateStr) return '';
-        try {
-          const date = new Date(dateStr);
-          return date.toLocaleDateString('en-US', { 
-            month: 'long', 
-            day: 'numeric', 
-            year: 'numeric' 
-          });
-        } catch (e) {
-          return dateStr;
-        }
+      return html`
+        <${Card} className="border-l-4 border-green-600 ${hidden ? 'hidden' : ''}">
+          <${CardHeader} title="Service Department updates" />
+          <ul className="space-y-4 px-5 pb-5 md:px-6">
+            ${messages.map((msg) => html`
+              <li key=${msg.id}>
+                <p className="leading-relaxed text-gray-800">${msg.message}</p>
+                ${msg.dateCreated ? html`<p className="mt-1 text-sm text-gray-500">Posted ${formatDate(msg.dateCreated)}</p>` : null}
+              </li>
+            `)}
+          </ul>
+        <//>
+      `;
+    }
+
+    /**
+     * Activity: routes where crews are working now and routes that are up next.
+     */
+    function ActivityGroup({ title, stage, routes, onRouteSelect }) {
+      const style = STAGES[stage];
+
+      return html`
+        <div className="px-5 pb-5 md:px-6">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+            <span className="h-2.5 w-2.5 rounded-full ${style.dot} ${stage === 'in-progress' ? 'animate-pulse' : ''}" aria-hidden="true"></span>
+            ${title}
+            <span className="font-normal text-gray-500">· ${plural(routes.length, 'route')}</span>
+          </h3>
+          <ul className="mt-2 divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200">
+            ${routes.map((route) => {
+              const preview = route.streets.slice(0, 3).map((street) => street.street).join(', ');
+              const extra = route.streets.length - 3;
+              return html`
+                <li key=${route.routeNumber}>
+                  <button
+                    type="button"
+                    onClick=${() => onRouteSelect({ ...route, stage })}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-gray-900">Route ${route.routeNumber}</p>
+                      <p className="truncate text-sm text-gray-600">
+                        ${preview}${extra > 0 ? ` +${extra} more` : ''}
+                      </p>
+                    </div>
+                    <span className="whitespace-nowrap text-xs text-gray-500">${plural(route.streets.length, 'street')}</span>
+                    ${ChevronRightIcon}
+                  </button>
+                </li>
+              `;
+            })}
+          </ul>
+        </div>
+      `;
+    }
+
+    function CollectionActivity({ records, lastUpdated, onRouteSelect }) {
+      const { working, upNext } = useMemo(() => ({
+        working: groupByRoute(records.filter((record) => stageOf(record) === 'in-progress')),
+        upNext: groupByRoute(records.filter((record) => stageOf(record) === 'up-next')),
+      }), [records]);
+
+      const updatedText = lastUpdated
+        ? `Updated ${lastUpdated.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+        : null;
+
+      return html`
+        <${Card}>
+          <${CardHeader} title="Happening now" detail=${updatedText} />
+          ${working.length === 0 && upNext.length === 0 ? html`
+            <p className="px-5 pb-5 text-sm text-gray-600 md:px-6">
+              No crews are collecting right now. Routes that are underway or scheduled next will show up here.
+            </p>
+          ` : html`
+            <div>
+              ${working.length > 0 ? html`
+                <${ActivityGroup} title="Crews working now" stage="in-progress" routes=${working} onRouteSelect=${onRouteSelect} />
+              ` : null}
+              ${upNext.length > 0 ? html`
+                <${ActivityGroup} title="Up next" stage="up-next" routes=${upNext} onRouteSelect=${onRouteSelect} />
+              ` : null}
+            </div>
+          `}
+        <//>
+      `;
+    }
+
+    /**
+     * AllRoutes: every route as an expandable row with its overall status and progress.
+     */
+    function RouteRow({ route, isExpanded, onToggle, onStreetSelect }) {
+      const summary = useMemo(() => summarizeRoute(route.streets), [route.streets]);
+      const percent = summary.total > 0 ? Math.round((summary.done / summary.total) * 100) : 0;
+      const panelId = `route-${route.routeNumber}-streets`;
+
+      return html`
+        <li>
+          <button
+            type="button"
+            onClick=${onToggle}
+            aria-expanded=${isExpanded}
+            aria-controls=${panelId}
+            className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-gray-50 focus:bg-gray-50 focus:outline-none md:px-6"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="font-semibold text-gray-900">Route ${route.routeNumber}</span>
+                <${Badge} stage=${summary.stage} label=${statusLabel({ stage: summary.stage, pass: summary.pass, raw: '' })} />
+              </div>
+              ${summary.stage === 'not-started' ? html`
+                <p className="mt-1 text-xs text-gray-500">${plural(summary.total, 'street')}</p>
+              ` : html`
+                <div className="mt-2 flex items-center gap-3">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-200">
+                    <div className="h-full rounded-full bg-green-600" style=${{ width: `${percent}%` }}></div>
+                  </div>
+                  <span className="whitespace-nowrap text-xs text-gray-500">${summary.done} of ${plural(summary.total, 'street')} done</span>
+                </div>
+              `}
+            </div>
+            <svg
+              className="h-5 w-5 flex-shrink-0 text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+
+          ${isExpanded ? html`
+            <ul id=${panelId} className="divide-y divide-gray-100 border-t border-gray-100 bg-gray-50/60">
+              ${route.streets.map((street) => html`
+                <li key=${street.id}>
+                  <${StreetRow} street=${street} onSelect=${onStreetSelect} />
+                </li>
+              `)}
+            </ul>
+          ` : null}
+        </li>
+      `;
+    }
+
+    function AllRoutes({ records, onStreetSelect }) {
+      const [expandedRoutes, setExpandedRoutes] = useState(() => new Set());
+      const routes = useMemo(() => groupByRoute(records), [records]);
+
+      const toggleRoute = (routeNumber) => {
+        setExpandedRoutes((previous) => {
+          const next = new Set(previous);
+          if (next.has(routeNumber)) {
+            next.delete(routeNumber);
+          } else {
+            next.add(routeNumber);
+          }
+          return next;
+        });
       };
 
       return html`
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-4 md:p-6">
-          <div className="flex items-center mb-4">
-            <span className="text-2xl mr-2">📢</span>
-            <h2 className="text-xl md:text-2xl font-bold text-green-800">
-              Service Department Updates
-            </h2>
-          </div>
-          
-          <div className="space-y-3">
-            ${messages.map((msg) => html`
-              <div 
-                key=${msg.id}
-                className="bg-gray-50 rounded-lg p-4 border border-gray-200"
-              >
-                <p className="text-gray-800 text-base leading-relaxed mb-2">
-                  ${msg.message}
-                </p>
-                ${msg.dateCreated && html`
-                  <p className="text-sm text-gray-500">
-                    Posted on ${formatDate(msg.dateCreated)}
-                  </p>
-                `}
-              </div>
+        <${Card} className="overflow-hidden">
+          <${CardHeader}
+            title="All routes"
+            detail=${`${plural(routes.length, 'route')} · ${plural(records.length, 'street')}`}
+          />
+          <ul className="divide-y divide-gray-100 border-t border-gray-100">
+            ${routes.map((route) => html`
+              <${RouteRow}
+                key=${route.routeNumber}
+                route=${route}
+                isExpanded=${expandedRoutes.has(route.routeNumber)}
+                onToggle=${() => toggleRoute(route.routeNumber)}
+                onStreetSelect=${onStreetSelect}
+              />
             `)}
-          </div>
-        </div>
+          </ul>
+        <//>
+      `;
+    }
+
+    /**
+     * SearchResults: streets whose name matches the search box.
+     */
+    function SearchResults({ records, searchTerm, onClear, onStreetSelect }) {
+      const matches = useMemo(() => {
+        const term = searchTerm.trim().toLowerCase();
+        return records
+          .filter((record) => record.street.toLowerCase().includes(term))
+          .sort((a, b) => a.street.localeCompare(b.street));
+      }, [records, searchTerm]);
+
+      return html`
+        <${Card} className="overflow-hidden">
+          <${CardHeader}
+            title="Search results"
+            detail=${matches.length > 0 ? `${plural(matches.length, 'street')} found` : null}
+          />
+          ${matches.length === 0 ? html`
+            <div className="px-5 pb-6 text-center md:px-6">
+              <p className="text-gray-700">No streets match "${searchTerm.trim()}".</p>
+              <p className="mt-1 text-sm text-gray-500">Try just part of the name, like "Edgepark" instead of "Edgepark Boulevard".</p>
+              <button
+                type="button"
+                onClick=${onClear}
+                className="mt-4 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Clear search
+              </button>
+            </div>
+          ` : html`
+            <ul className="divide-y divide-gray-100 border-t border-gray-100">
+              ${matches.map((record) => html`
+                <li key=${record.id}>
+                  <${StreetRow} street=${record} showRoute=${true} onSelect=${onStreetSelect} />
+                </li>
+              `)}
+            </ul>
+          `}
+        <//>
       `;
     }
 
@@ -2693,369 +1175,181 @@
       const [records, setRecords] = useState([]);
       const [loading, setLoading] = useState(true);
       const [error, setError] = useState(null);
+      const [lastUpdated, setLastUpdated] = useState(null);
       const [searchTerm, setSearchTerm] = useState('');
-      const [activeId, setActiveId] = useState(null);
-      const [sortBy, setSortBy] = useState('street');
-      const [showAnalyzerModal, setShowAnalyzerModal] = useState(false);
-      const [modalRecord, setModalRecord] = useState(null);
-      const [isModalOpen, setIsModalOpen] = useState(false);
-      const [expandedRoutes, setExpandedRoutes] = useState(new Set());
-      const [showOnboarding, setShowOnboarding] = useState(false);
+      const [selectedStreet, setSelectedStreet] = useState(null);
+      const [selectedRoute, setSelectedRoute] = useState(null);
+      const [showHelp, setShowHelp] = useState(false);
 
-      useEffect(() => {
-        let isMounted = true;
-
-        async function loadData() {
-          try {
-            const response = await fetch('/api/streets');
-            if (!response.ok) {
-              throw new Error('Unable to fetch street data.');
-            }
-
-            const payload = await response.json();
-            if (isMounted) {
-              const records = Array.isArray(payload.records) ? payload.records : [];
-              setRecords(records);
-            }
-          } catch (err) {
-            console.error(err);
-            if (isMounted) {
-              setError(
-                'Unable to load the latest collection information right now. Please try again soon.'
-              );
-            }
-          } finally {
-            if (isMounted) {
-              setLoading(false);
-            }
+      // One request feeds every section of the page.
+      const loadStreets = useCallback(async () => {
+        try {
+          const response = await fetch('/api/streets');
+          if (!response.ok) {
+            throw new Error(`Street data request failed (${response.status})`);
           }
+
+          const payload = await response.json();
+          if (payload.offline) {
+            throw new Error('Offline');
+          }
+
+          const streets = Array.isArray(payload.records)
+            ? payload.records
+                .filter((record) => typeof record.street === 'string' && record.street.trim())
+                .map((record) => ({ ...record, street: record.street.trim() }))
+            : [];
+          setRecords(streets);
+          setLastUpdated(new Date());
+          setError(null);
+        } catch (err) {
+          console.error('Error loading streets:', err);
+          setError(
+            err.message === 'Offline'
+              ? 'You appear to be offline. Check your connection and try again.'
+              : 'The tracker is having trouble reaching its data right now. Please try again in a few minutes.'
+          );
+        } finally {
+          setLoading(false);
         }
-
-        loadData();
-
-        return () => {
-          isMounted = false;
-        };
       }, []);
 
-      const sortedRecords = useMemo(() => {
-        const filtered = [...records].filter((record) => Boolean(record.street));
-        
-        return filtered.sort((a, b) => {
-          switch (sortBy) {
-            case 'status':
-              const statusOrder = { 
-                'Not Started': 0, 
-                'Up Next': 1,
-                'Up Next- 2nd Pass': 1.1,
-                'Up Next- 3rd Pass': 1.2,
-                'Up Next- 4th Pass': 1.3,
-                'Up Next- 5th Pass': 1.4,
-                'Up Next- 6th Pass': 1.5,
-                'Up Next- 7th Pass': 1.6,
-                'Up Next- 8th Pass': 1.7,
-                'In Progress': 2,
-                'In Progress 2nd Pass': 2.1,
-                'In Progress 3rd Pass': 2.2,
-                'In Progress 4th Pass': 2.3,
-                'In Progress 5th Pass': 2.4,
-                'In Progress 6th Pass': 2.5,
-                'In Progress 7th Pass': 2.6,
-                'In Progress 8th Pass': 2.7,
-                'Completed 1st Pass': 3,
-                'Completed 2nd Pass': 4,
-                'Completed 3rd Pass': 5,
-                'Completed 4th Pass': 6,
-                'Completed 5th Pass': 7,
-                'Completed 6th Pass': 8,
-                'Completed 7th Pass': 9,
-                'Completed 8th Pass': 10,
-                'Completed': 11
-              };
-              const aStatus = normalizeStatus(a.status || 'Unknown');
-              const bStatus = normalizeStatus(b.status || 'Unknown');
-              const aOrder = statusOrder[aStatus] ?? 999;
-              const bOrder = statusOrder[bStatus] ?? 999;
-              if (aOrder !== bOrder) return aOrder - bOrder;
-              return a.street.localeCompare(b.street);
-            case 'route':
-              const aRoute = parseInt(a.routeNumber) || 999;
-              const bRoute = parseInt(b.routeNumber) || 999;
-              if (aRoute !== bRoute) return aRoute - bRoute;
-              return a.street.localeCompare(b.street);
-            case 'street':
-            default:
-              return a.street.localeCompare(b.street);
-          }
-        });
-      }, [records, sortBy]);
-
-      const filteredRecords = useMemo(() => {
-        const term = searchTerm.trim().toLowerCase();
-        if (!term) {
-          return sortedRecords;
-        }
-
-        return sortedRecords.filter((record) =>
-          record.street.toLowerCase().includes(term)
-        );
-      }, [sortedRecords, searchTerm]);
-
-      // Group filtered records by route number
-      const routeGroups = useMemo(() => {
-        const groups = {};
-        
-        filteredRecords.forEach((record) => {
-          const route = record.routeNumber || 'Unknown';
-          if (!groups[route]) {
-            groups[route] = [];
-          }
-          groups[route].push(record);
-        });
-
-        // Convert to array and sort by route number
-        return Object.entries(groups)
-          .sort((a, b) => {
-            const aNum = parseInt(a[0]) || 999999;
-            const bNum = parseInt(b[0]) || 999999;
-            return aNum - bNum;
-          })
-          .map(([routeNumber, records]) => ({
-            routeNumber,
-            records,
-          }));
-      }, [filteredRecords]);
-
-      // Toggle route expansion
-      const toggleRoute = (routeNumber) => {
-        setExpandedRoutes(prev => {
-          const newSet = new Set(prev);
-          if (newSet.has(routeNumber)) {
-            newSet.delete(routeNumber);
-          } else {
-            newSet.add(routeNumber);
-          }
-          return newSet;
-        });
-      };
-
       useEffect(() => {
-        if (!activeId && filteredRecords.length > 0) {
-          setActiveId(filteredRecords[0].id);
-        }
-      }, [filteredRecords, activeId]);
+        loadStreets();
 
-      const selectedRecord = useMemo(() => {
-        if (!activeId) {
-          return null;
-        }
+        const interval = setInterval(() => {
+          if (document.visibilityState === 'visible') {
+            loadStreets();
+          }
+        }, REFRESH_INTERVAL_MS);
 
-        return records.find((record) => record.id === activeId) ?? null;
-      }, [records, activeId]);
+        return () => clearInterval(interval);
+      }, [loadStreets]);
 
-      const openModal = (record) => {
-        setModalRecord(record);
-        setIsModalOpen(true);
+      const retry = () => {
+        setLoading(true);
+        loadStreets();
       };
 
-      const closeModal = () => {
-        setIsModalOpen(false);
-        setModalRecord(null);
+      const openStreet = (street) => {
+        setSelectedRoute(null);
+        setSelectedStreet(street);
       };
 
-      let mainContent;
+      const isSearching = searchTerm.trim().length > 0;
+      // Keep showing the last good data if a background refresh fails.
+      const showError = error && records.length === 0;
 
-      if (loading) {
-        mainContent = html`<div className="mt-8">
-          <${LoadingSpinner} />
-        </div>`;
-      } else if (error) {
-        mainContent = html`<div className="mt-8 rounded-lg bg-red-50 border border-red-200 p-6">
-          <div className="flex items-center">
-            <div className="text-red-500 text-xl mr-3">⚠️</div>
-            <div>
-              <h3 className="text-sm font-medium text-red-800">Unable to load data</h3>
-              <p className="text-sm text-red-700 mt-1">${error}</p>
-            </div>
-          </div>
-        </div>`;
+      let content;
+      if (loading && records.length === 0) {
+        content = html`<${Card}><${LoadingSpinner} /><//>`;
+      } else if (showError) {
+        content = html`
+          <${Card} className="px-5 py-8 text-center md:px-6">
+            <p className="text-3xl" aria-hidden="true">🍂</p>
+            <h2 className="mt-2 text-lg font-semibold text-gray-900">We couldn't load pickup status</h2>
+            <p className="mt-1 text-sm text-gray-600">${error}</p>
+            <button
+              type="button"
+              onClick=${retry}
+              className="mt-4 rounded-lg bg-green-700 px-5 py-2.5 font-medium text-white hover:bg-green-800"
+            >
+              Try again
+            </button>
+          <//>
+        `;
+      } else if (isSearching) {
+        content = html`
+          <${SearchResults}
+            records=${records}
+            searchTerm=${searchTerm}
+            onClear=${() => setSearchTerm('')}
+            onStreetSelect=${openStreet}
+          />
+        `;
       } else {
-        // Check if user is searching
-        const isSearching = searchTerm.trim().length > 0;
-        
-        const resultsList =
-          filteredRecords.length === 0
-            ? html`<div className="p-6 text-center">
-                <div className="text-4xl mb-3">🔍</div>
-                <p className="text-sm text-gray-500">
-                  No streets match that search. Try another name or double-check your spelling.
-                </p>
-              </div>`
-            : isSearching
-              ? html`<div className="divide-y divide-gray-100">
-                  ${filteredRecords.map((record) => html`
-                    <button
-                      key=${record.id}
-                      type="button"
-                      onClick=${() => openModal(record)}
-                      className="flex w-full items-center justify-between px-4 py-3 min-h-[56px] text-left transition-all duration-200 hover:bg-green-50"
-                    >
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">
-                          ${record.street}
-                          ${record.routeNumber ? html`
-                            <span className="ml-2 text-sm text-green-700 font-normal">
-                              (Route #${record.routeNumber})
-                            </span>
-                          ` : null}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <${StatusBadge} status=${record.status || 'Unknown'} />
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                      </div>
-                    </button>
-                  `)}
-                </div>`
-              : html`<div className="space-y-2">
-                  ${routeGroups.map((group) => {
-                    return html`<${CollapsibleRoute}
-                      key=${group.routeNumber}
-                      routeNumber=${group.routeNumber}
-                      records=${group.records}
-                      isExpanded=${expandedRoutes.has(group.routeNumber)}
-                      onToggle=${() => toggleRoute(group.routeNumber)}
-                      onStreetClick=${openModal}
-                    />`;
-                  })}
-                </div>`;
-
-
-        mainContent = html`<div className="mt-8 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium text-gray-600">
-                ${routeGroups.length} ${routeGroups.length === 1 ? 'route' : 'routes'} • ${filteredRecords.length} ${filteredRecords.length === 1 ? 'street' : 'streets'}
-              </span>
-              ${filteredRecords.length > 0 ? html`<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                ${filteredRecords.filter(r => isCompletedStatus(r.status)).length} completed
-              </span>` : null}
-            </div>
-            ${searchTerm
-              ? html`<button
-                  type="button"
-                  onClick=${() => {
-                    setSearchTerm('');
-                    setActiveId(null);
-                  }}
-                  className="text-sm text-green-600 hover:text-green-700 font-medium"
-                >
-                  Clear search
-                </button>`
-              : null}
-          </div>
-          <div className="max-h-96 overflow-y-auto rounded-lg border border-gray-200 bg-white/90 backdrop-blur-sm shadow-sm scroll-container">
-            ${resultsList}
-          </div>
-        </div>`;
+        content = html`
+          <${CollectionActivity} records=${records} lastUpdated=${lastUpdated} onRouteSelect=${setSelectedRoute} />
+          <${AllRoutes} records=${records} onStreetSelect=${openStreet} />
+        `;
       }
 
-      return html`<div className="min-h-screen app-background px-3 md:px-4 py-6 md:py-10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 md:gap-8 app-content">
-          <header className="text-center">
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-4 md:p-8 border border-green-200">
-              <div className="flex items-center justify-center mb-3 md:mb-4">
-                <div className="text-3xl md:text-4xl mr-2 md:mr-3">🍂</div>
-                <h1 className="text-2xl md:text-4xl font-bold text-green-800">
-                  Westlake Leaf Collection Tracker
-                </h1>
-              </div>
-              <p className="text-base md:text-lg text-gray-600 mb-3 md:mb-4">
-                Search your street to see the latest pickup status
-              </p>
-              <div className="flex gap-3 justify-center mb-2 flex-wrap">
+      return html`<div className="app-background min-h-screen px-3 py-6 md:px-4 md:py-10">
+        <div className="app-content mx-auto flex max-w-3xl flex-col gap-4 md:gap-6">
+          <header className="rounded-2xl bg-white/95 p-5 shadow-lg backdrop-blur-sm md:p-8">
+            <h1 className="text-2xl font-bold text-green-800 md:text-3xl">
+              <span aria-hidden="true">🍂 </span>Westlake Leaf Collection Tracker
+            </h1>
+            <p className="mt-2 text-gray-600">Find your street to see the latest leaf pickup status.</p>
+
+            <div className="relative mt-5">
+              <label htmlFor="street-search" className="sr-only">Search for your street</label>
+              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                ${SearchIcon}
+              </span>
+              <input
+                id="street-search"
+                type="text"
+                enterKeyHint="search"
+                autoComplete="off"
+                placeholder="Search for your street"
+                value=${searchTerm}
+                onChange=${(event) => setSearchTerm(event.target.value)}
+                className="w-full rounded-xl border border-gray-300 bg-white py-3.5 pl-12 pr-12 text-base text-gray-900 shadow-sm placeholder:text-gray-500 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-600/30"
+              />
+              ${searchTerm ? html`
                 <button
-                  onClick=${() => setShowAnalyzerModal(true)}
-                  className="bg-blue-600 text-white px-6 py-3 min-h-[48px] rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center"
+                  type="button"
+                  onClick=${() => setSearchTerm('')}
+                  aria-label="Clear search"
+                  className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-gray-400 hover:text-gray-600"
                 >
-                  <span className="mr-2">📸</span>
-                  Analyze Collection
+                  ${CloseIcon}
                 </button>
-                <button
-                  onClick=${() => setShowOnboarding(true)}
-                  className="bg-green-600 text-white px-6 py-3 min-h-[48px] rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center"
-                >
-                  <span className="mr-2">💡</span>
-                  How to Use
-                </button>
-              </div>
-              <p className="text-sm text-gray-500">
-                Updated daily by the Westlake Service Department
-              </p>
+              ` : null}
             </div>
+
+            <button
+              type="button"
+              onClick=${() => setShowHelp(true)}
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-green-800 hover:underline"
+            >
+              ${InfoIcon}
+              How it works
+            </button>
           </header>
 
-          <${ActiveCrews} onStreetClick=${openModal} />
-          <${UpNextRoutes} onStreetClick=${openModal} />
+          <${ServiceMessages} hidden=${isSearching} />
 
-          <${ServiceMessages} />
+          ${content}
 
-          <main className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-green-600 to-green-700 px-4 md:px-6 py-3 md:py-4">
-              <div className="flex flex-col gap-4">
-                <label className="text-sm font-medium text-white flex items-center" htmlFor="street-search">
-                  <span className="mr-2">🔍</span>
-                  Search for your street
-                </label>
-                <input
-                  id="street-search"
-                  type="search"
-                  placeholder="Start typing to find your street..."
-                  value=${searchTerm}
-                  onChange=${(event) => setSearchTerm(event.target.value)}
-                  className="w-full rounded-lg border-0 px-4 py-3 text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 bg-white text-gray-900 placeholder-gray-500"
-                />
-              </div>
-            </div>
-            
-            <div className="p-4 md:p-6">
-              ${mainContent}
-            </div>
-          </main>
-        </div>
-        
-        <footer className="mt-8 pt-6 border-t border-gray-200">
-          <div className="text-center text-sm text-gray-600">
-            <p className="mb-2">
-              © 2024 City of Westlake, OH. All rights reserved.
-            </p>
-            <div className="flex justify-center space-x-4">
-              <a 
-                href="privacy-policy.html" 
-                className="text-green-600 hover:text-green-700 underline"
+          <footer className="pb-24 pt-2 text-center text-sm text-white/90">
+            <p>Updated daily by the Westlake Service Department</p>
+            <p className="mt-1">© ${new Date().getFullYear()} City of Westlake, OH</p>
+            <div className="mt-1 flex justify-center gap-4">
+              <a
+                href="privacy-policy.html"
+                className="flex items-center underline hover:text-white"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 Privacy Policy
               </a>
-              <span className="text-gray-400">•</span>
-              <a 
-                href="terms-of-service.html" 
-                className="text-green-600 hover:text-green-700 underline"
+              <a
+                href="terms-of-service.html"
+                className="flex items-center underline hover:text-white"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 Terms of Service
               </a>
             </div>
-          </div>
-        </footer>
-        
-        <${RouteModal} record=${modalRecord} isOpen=${isModalOpen} onClose=${closeModal} />
-        <${CameraAnalysisModal} isOpen=${showAnalyzerModal} onClose=${() => setShowAnalyzerModal(false)} />
-        <${HowToUse} isOpen=${showOnboarding} onClose=${() => setShowOnboarding(false)} />
+          </footer>
+        </div>
+
+        <${StreetModal} key=${selectedStreet ? selectedStreet.id : 'none'} street=${selectedStreet} onClose=${() => setSelectedStreet(null)} />
+        <${RouteStreetsModal} route=${selectedRoute} onClose=${() => setSelectedRoute(null)} onStreetSelect=${openStreet} />
+        <${HelpModal} isOpen=${showHelp} onClose=${() => setShowHelp(false)} />
         <${InstallPrompt} />
       </div>`;
     }

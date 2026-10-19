@@ -3,7 +3,7 @@
  * Provides offline support and caching for PWA functionality
  */
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `leaf-tracker-${CACHE_VERSION}`;
 const API_CACHE = `leaf-tracker-api-${CACHE_VERSION}`;
 
