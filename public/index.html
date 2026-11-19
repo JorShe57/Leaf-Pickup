@@ -239,8 +239,10 @@
              window.navigator.standalone === true;
     }
 
-    // How often the page re-checks street status while it is open. Every refresh
-    // costs Airtable API calls, so refreshes are skipped while the tab is hidden.
+    // How often the page re-checks street status while it is open. Refreshes are
+    // skipped while the tab is hidden. This matches PUBLIC_DATA_CACHE_SECONDS
+    // in api/_public-cache.js: the CDN holds one shared copy for the same five
+    // minutes, so polling faster would not make the status any fresher.
     const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
     /**
@@ -1200,7 +1202,8 @@
                 .map((record) => ({ ...record, street: record.street.trim() }))
             : [];
           setRecords(streets);
-          setLastUpdated(new Date());
+          const fetchedAt = payload.fetchedAt ? new Date(payload.fetchedAt) : null;
+          setLastUpdated(fetchedAt && !Number.isNaN(fetchedAt.getTime()) ? fetchedAt : new Date());
           setError(null);
         } catch (err) {
           console.error('Error loading streets:', err);

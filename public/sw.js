@@ -76,7 +76,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Handle API requests (network first, fallback to cache)
+  // Handle API requests (network first, fallback to cache).
+  // Always try the network while online. Vercel's CDN holds the shared
+  // Airtable copy; this cache is only the offline fallback. Serving it
+  // first would show street status older than that five-minute window.
   if (url.pathname.startsWith('/api/')) {
     // Don't cache POST requests
     if (request.method === 'POST') {

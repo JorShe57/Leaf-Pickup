@@ -1,3 +1,5 @@
+import { setUncached } from './_public-cache.js';
+
 /**
  * In-Memory Rate Limiter for API Endpoints
  * Uses sliding window algorithm with IP-based tracking
@@ -99,6 +101,9 @@ export function withRateLimit(handler, limit) {
     
     if (!allowed) {
       console.log(`[RateLimit] IP ${ip} exceeded limit of ${limit} requests/hour`);
+      // A 429 must not be stored. Otherwise the CDN could keep telling
+      // visitors to slow down after the limit has expired.
+      setUncached(res);
       res.setHeader('Retry-After', resetTime.toString());
       return res.status(429).json({
         error: 'Rate limit exceeded',

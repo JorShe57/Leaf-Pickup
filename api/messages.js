@@ -1,73 +1,56 @@
 import { withRateLimit, RATE_LIMITS } from './_rate-limiter.js';
+import { fetchAllRecords } from './_airtable.js';
+import { setPublicReadCache, setUncached, singleFlight } from './_public-cache.js';
 
 async function handler(req, res) {
-  // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
-  
+
   if (req.method !== 'GET') {
+    setUncached(res);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
   const BASE_ID = 'appsnAjoLIt7DzTzF';
-  const TABLE_ID = 'tbl1SroHzPHflp0EJ'; 
+  const TABLE_ID = 'tbl1SroHzPHflp0EJ';
 
   if (!AIRTABLE_API_KEY) {
     console.error('Missing Airtable API key');
+    setUncached(res);
     return res.status(500).json({ error: 'Server misconfiguration' });
   }
 
   try {
-    const allRecords = [];
-    const baseUrl = `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}`;
-    let nextOffset;
-
-    do {
-      const url = new URL(baseUrl);
-      url.searchParams.set('pageSize', '100');
-
-      if (nextOffset) {
-        url.searchParams.set('offset', nextOffset);
-      }
-
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${AIRTABLE_API_KEY}`,
-        },
+    const messages = await singleFlight(`airtable:${BASE_ID}:${TABLE_ID}`, async () => {
+      const allRecords = await fetchAllRecords({
+        apiKey: AIRTABLE_API_KEY,
+        baseId: BASE_ID,
+        tableId: TABLE_ID,
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Airtable API error (${response.status}):`, errorText);
-        throw new Error(`Failed to fetch from Airtable (status ${response.status}): ${errorText}`);
-      }
+      return allRecords
+        .filter((record) => {
+          const fields = record.fields || {};
+          const isActive = fields['Active'];
+          return isActive === undefined || isActive === true;
+        })
+        .map((record) => {
+          const fields = record.fields || {};
+          return {
+            id: record.id,
+            message: fields['Message'] || '',
+            dateCreated: fields['Date Created'] || null,
+          };
+        })
+        .filter((msg) => msg.message);
+    });
 
-      const page = await response.json();
-      if (Array.isArray(page.records)) {
-        allRecords.push(...page.records);
-      }
-
-      nextOffset = page.offset;
-    } while (nextOffset);
-
-    // Filter and map records
-    const messages = allRecords
-      .filter(record => {
-        // Only include active messages if Active field exists
-        const isActive = record.fields['Active'];
-        return isActive === undefined || isActive === true;
-      })
-      .map(record => ({
-        id: record.id,
-        message: record.fields['Message'] || '',
-        dateCreated: record.fields['Date Created'] || null,
-      }))
-      .filter(msg => msg.message); // Only include messages with content
-
+    setPublicReadCache(res);
     res.status(200).json({ messages });
   } catch (error) {
     console.error('Error fetching messages:', error);
+    setUncached(res);
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
 }
